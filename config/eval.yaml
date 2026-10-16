@@ -17,8 +17,10 @@ generation:
 
 judge:
   model: deepseek-v4.1-flash     # 默认全量评判（成本控制默认启用；方舟闲时 1/4、忙时 2/8）
-  cross_check_model: deepseek-v4-pro
-  cross_check_ratio: 0.10        # 10% 样本用主力裁判交叉验证
+  cross_check_models:            # 10% 样本交叉验证（多裁判一致性；官方通道独立于两个被评测平台）
+    - deepseek-v4-pro            # 方舟托管（9/27）
+    - deepseek-v4-pro-official   # DeepSeek 官方 API（9/27，独立性最强）
+  cross_check_ratio: 0.10        # 10% 样本用交叉裁判验证
   temperature: 0
   max_tokens: 1024
   timeout_seconds: 30

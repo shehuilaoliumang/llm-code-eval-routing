@@ -21,7 +21,7 @@ from .config import EvalConfig, load_yaml
 
 # ---------- 模型展示名与配色（浅色主题） ----------
 DISPLAY = {
-    "doubao-seed-2.1-pro-260915": ("方舟 2.1-pro", "#7c3aed"),
+    "doubao-seed-2-1-pro-260915": ("方舟 2.1-pro", "#7c3aed"),
     "doubao-seed-2-0-code-preview-260215": ("方舟 code-preview", "#ea580c"),
     "doubao-seed-2-1-lite-260915": ("方舟 2.1-lite", "#16a34a"),
     "doubao-seed-2-0-mini-260428": ("方舟 2.0-mini", "#65a30d"),

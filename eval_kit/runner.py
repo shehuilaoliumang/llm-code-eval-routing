@@ -52,8 +52,7 @@ class EvaluationRunner:
         ]
         result = self.client.chat(
             platform=platform,
-            model=model_cfg.get("snapshot", model_id)
-            if platform == "volcengine" else model_id,
+            model=model_cfg.get("snapshot") or model_id,  # 全平台统一：有快照用快照（版本固定）
             messages=messages,
             temperature=self.gen["temperature"],
             top_p=self.gen["top_p"],
@@ -107,17 +106,31 @@ class EvaluationRunner:
         return row
 
     def _maybe_judge(self, task: Dict, model_id: str, code: str, row: Dict) -> None:
-        """规范/健壮性评分：默认裁判全量 + 主力裁判按比例交叉验证。"""
+        """规范/健壮性评分：默认裁判全量 + 多裁判按比例交叉验证。
+
+        交叉验证模型列表见 eval.yaml 的 judge.cross_check_models（兼容旧字段
+        cross_check_model 单值）。同一批抽样样本由全部交叉裁判评分，用于度量
+        裁判间一致性（含 DeepSeek 官方通道——独立于两个被评测平台）。
+        """
         judge_model = self.judge_cfg["model"]
-        cross_model = self.judge_cfg.get("cross_check_model")
+        cross_models = self.judge_cfg.get("cross_check_models") or []
+        if not cross_models and self.judge_cfg.get("cross_check_model"):
+            cross_models = [self.judge_cfg["cross_check_model"]]
         style, robust, judge_err = self._judge_once(judge_model, task, code)
         row.update({"style_score": style, "robustness_score": robust,
                     "judge_model": judge_model, "judge_error": judge_err})
-        if cross_model and self.cross_check_ratio > 0 and _in_cross_check(task, model_id, row["run"]):
-            c_style, c_robust, c_err = self._judge_once(cross_model, task, code)
-            row.update({"cross_check_model": cross_model,
-                        "cross_style_score": c_style, "cross_robustness_score": c_robust,
-                        "cross_judge_error": c_err})
+        if cross_models and self.cross_check_ratio > 0 and _in_cross_check(task, model_id, row["run"]):
+            checks = []
+            for cm in cross_models:
+                c_style, c_robust, c_err = self._judge_once(cm, task, code)
+                checks.append({"model": cm, "style_score": c_style,
+                               "robustness_score": c_robust, "error": c_err})
+            row["cross_checks"] = checks
+            # 兼容旧字段（取第一个交叉裁判）
+            row.update({"cross_check_model": checks[0]["model"],
+                        "cross_style_score": checks[0]["style_score"],
+                        "cross_robustness_score": checks[0]["robustness_score"],
+                        "cross_judge_error": checks[0]["error"]})
         row["quality_total"] = round(quality_total(
             row.get("syntax_score", 0), row.get("functional_score", 0),
             style, robust, self.weights), 2)
@@ -132,8 +145,7 @@ class EvaluationRunner:
         messages = build_judge_messages(task["description"], code)
         result = self.client.chat(
             platform=judge_cfg["platform"],
-            model=judge_cfg.get("snapshot", judge_model)
-            if judge_cfg["platform"] == "volcengine" else judge_model,
+            model=judge_cfg.get("snapshot") or judge_model,  # 全平台统一用快照
             messages=messages,
             temperature=self.judge_cfg["temperature"],
             max_tokens=self.judge_cfg["max_tokens"],

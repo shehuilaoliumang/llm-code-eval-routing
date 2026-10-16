@@ -17,7 +17,7 @@ task.json 字段:
 
 v0.3 修订（双平台 Key 实测）: 方舟侧切换为账号可调用的精确版本 ID
 （doubao-seed-2-1-lite-260915 / doubao-seed-2-0-mini-260428 /
-doubao-seed-2-0-code-preview-260215）；doubao-seed-2.1-pro-260915 已核实价格
+doubao-seed-2-0-code-preview-260215）；doubao-seed-2-1-pro-260915 已核实价格
 但账号未开通（控制台激活后参与路由）；evolving/turbo/seed-code 均已退出。
 所有价格经官方定价页核实；调用方舟必须用精确版本 ID。
 
@@ -34,7 +34,7 @@ import sys
 # ============ 数据区（与 references/ 同步，v0.2 先验版，待控制台核实） ============
 
 PLATFORM = {
-    "doubao-seed-2.1-pro-260915": "volcengine",
+    "doubao-seed-2-1-pro-260915": "volcengine",
     "doubao-seed-2-0-code-preview-260215": "volcengine",
     "doubao-seed-2-1-lite-260915": "volcengine",
     "doubao-seed-2-0-mini-260428": "volcengine",
@@ -45,14 +45,14 @@ PLATFORM = {
 }
 
 TIER = {  # 档位，用于备选链构造
-    "doubao-seed-2.1-pro-260915": "T0", "qwen3.8-max": "T0",
+    "doubao-seed-2-1-pro-260915": "T0", "qwen3.8-max": "T0",
     "doubao-seed-2-0-code-preview-260215": "T1", "qwen3-coder-flash": "T1",
     "doubao-seed-2-1-lite-260915": "T2", "qwen3.7-plus": "T2",
     "doubao-seed-2-0-mini-260428": "T3", "qwen3.7-flash": "T3",
 }
 
 PRIOR_QUALITY = {  # 分难度先验质量分
-    "doubao-seed-2.1-pro-260915": {"L1": 95, "L2": 90, "L3": 85, "L4": 80},
+    "doubao-seed-2-1-pro-260915": {"L1": 95, "L2": 90, "L3": 85, "L4": 80},
     "qwen3.8-max": {"L1": 95, "L2": 90, "L3": 85, "L4": 80},
     "doubao-seed-2-0-code-preview-260215": {"L1": 92, "L2": 88, "L3": 84, "L4": 76},
     "qwen3-coder-flash": {"L1": 91, "L2": 86, "L3": 82, "L4": 72},
@@ -63,14 +63,14 @@ PRIOR_QUALITY = {  # 分难度先验质量分
 }
 
 UNIT_COST = {  # 单次成本（元，0-32K档，输入1500/输出800假设；2026-10-17 官方定价核实）
-    "doubao-seed-2.1-pro-260915": 0.033, "qwen3.8-max": 0.047,
+    "doubao-seed-2-1-pro-260915": 0.033, "qwen3.8-max": 0.047,
     "doubao-seed-2-0-code-preview-260215": 0.014, "qwen3-coder-flash": 0.005,
     "doubao-seed-2-1-lite-260915": 0.003, "qwen3.7-plus": 0.009,
     "doubao-seed-2-0-mini-260428": 0.002, "qwen3.7-flash": 0.001,
 }
 
 LATENCY = {  # 先验平均耗时（秒）
-    "doubao-seed-2.1-pro-260915": 12, "qwen3.8-max": 12,
+    "doubao-seed-2-1-pro-260915": 12, "qwen3.8-max": 12,
     "doubao-seed-2-0-code-preview-260215": 8, "qwen3-coder-flash": 6,
     "doubao-seed-2-1-lite-260915": 4, "qwen3.7-plus": 7,
     "doubao-seed-2-0-mini-260428": 3, "qwen3.7-flash": 3,
@@ -96,12 +96,12 @@ def route_by_rule(task, d):
     quality = task.get("quality", "pass")
     latency = task.get("latency", "interactive")
     if quality == "premium" or d == "L4":
-        primary = "doubao-seed-2.1-pro-260915"
+        primary = "doubao-seed-2-1-pro-260915"
         chain = ["qwen3.8-max", "doubao-seed-2-0-code-preview-260215"]
         reason = "L4专家级/高价值任务，旗舰兜底"
     elif d == "L3":
         primary = "doubao-seed-2-0-code-preview-260215"
-        chain = ["qwen3-coder-flash", "doubao-seed-2.1-pro-260915"]
+        chain = ["qwen3-coder-flash", "doubao-seed-2-1-pro-260915"]
         reason = "L3高级，代码专项模型性价比最优"
     elif d == "L2":
         primary = "doubao-seed-2-1-lite-260915"

@@ -5,17 +5,28 @@ import os
 import yaml
 
 
-def load_dotenv(path: str = ".env") -> bool:
-    """加载 .env 中的环境变量（setdefault，不覆盖已有值）。返回是否找到文件。"""
-    if not os.path.exists(path):
-        return False
-    with open(path, encoding="utf-8") as f:
-        for line in f:
+def load_dotenv(path: str = ".env.local") -> bool:
+    """加载密钥文件（setdefault，不覆盖已有值）。返回是否找到文件。
+
+    依次尝试 .env.local 与 .env（前者优先）。
+    注：项目历史 .env 因 ACL 事故已锁死不可读，现统一使用 .env.local（见 README 安全规范）。
+    """
+    loaded = False
+    for candidate in (path, ".env"):
+        if not os.path.exists(candidate):
+            continue
+        try:
+            with open(candidate, encoding="utf-8") as f:
+                lines = f.readlines()
+        except PermissionError:
+            continue  # 旧 .env 因 ACL 事故锁死，跳过
+        for line in lines:
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
                 os.environ.setdefault(k.strip(), v.strip())
-    return True
+        loaded = True
+    return loaded
 
 
 def load_yaml(path):

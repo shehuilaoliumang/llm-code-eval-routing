@@ -123,17 +123,48 @@ class TestConfigAndTasks(unittest.TestCase):
         self.assertEqual(cfg.generation["temperature"], 0.2)
 
     def test_seed_tasks_reference_solutions_pass(self):
-        """种子任务的参考实现必须全部通过各自测试（回归保护）。"""
-        with open(os.path.join(ROOT, "data", "tasks", "tasks_v1.json"),
-                  encoding="utf-8") as f:
-            tasks = json.load(f)["tasks"]
-        for task in tasks:
-            passed, total, details = run_unit_tests(
-                task["reference_solution"], task["entry_point"],
-                task["test_cases"], timeout=30,
-            )
-            self.assertEqual(passed, total,
-                             f"{task['task_id']} 参考实现未全过: {details}")
+        """所有任务集文件的参考实现必须全部通过各自测试（回归保护）。
+
+        覆盖 tasks_v1.json（种子集）与 tasks_v2.json（48题完整集，若已构建）。
+        这是「LLM 出题质量门」的自动化落地：抓错误的期望值与不可运行代码。
+        """
+        import glob
+        task_files = sorted(glob.glob(os.path.join(ROOT, "data", "tasks", "tasks_*.json")))
+        self.assertTrue(task_files, "未找到任何任务集文件")
+        for tf in task_files:
+            with open(tf, encoding="utf-8") as f:
+                payload = json.load(f)
+            tasks = payload["tasks"] if isinstance(payload, dict) else payload
+            for task in tasks:
+                passed, total, details = run_unit_tests(
+                    task["reference_solution"], task["entry_point"],
+                    task["test_cases"], timeout=30,
+                )
+                self.assertEqual(passed, total,
+                                 f"{os.path.basename(tf)}:{task['task_id']} 参考实现未全过: {details}")
+
+    def test_tasks_v2_schema(self):
+        """tasks_v2.json（若存在）须满足结构约束：ID唯一、4~6用例、stdlib-only。"""
+        import glob
+        v2 = os.path.join(ROOT, "data", "tasks", "tasks_v2.json")
+        if not os.path.exists(v2):
+            self.skipTest("tasks_v2.json 尚未构建")
+        with open(v2, encoding="utf-8") as f:
+            payload = json.load(f)
+        tasks = payload["tasks"]
+        ids = [t["task_id"] for t in tasks]
+        self.assertEqual(len(ids), len(set(ids)), "task_id 有重复")
+        for t in tasks:
+            self.assertIn(t["difficulty"], ("L1", "L2", "L3", "L4"))
+            self.assertTrue(4 <= len(t["test_cases"]) <= 6, f"{t['task_id']} 用例数越界")
+            self.assertIn(t.get("split"), ("rule_dev", "holdout"), f"{t['task_id']} 缺少划分")
+        # 元数据溯源（可复现性）
+        meta = payload.get("metadata", {})
+        self.assertIn("editor", meta)
+        self.assertIn("prompt_hash", meta)
+        dev = sum(1 for t in tasks if t.get("split") == "rule_dev")
+        hold = sum(1 for t in tasks if t.get("split") == "holdout")
+        self.assertEqual(dev, hold, "dev/holdout 应各24题")
 
 
 if __name__ == "__main__":

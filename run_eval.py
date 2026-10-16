@@ -49,7 +49,7 @@ def main():
     ap.add_argument("--manifest-only", action="store_true", help="只生成 manifest")
     args = ap.parse_args()
 
-    load_dotenv(os.path.join(ROOT, ".env"))
+    load_dotenv(os.path.join(ROOT, ".env.local"))
     models_cfg = load_yaml(args.models)
     eval_cfg_raw = load_yaml(args.eval_config)
     registry = ModelRegistry(models_cfg)

@@ -36,18 +36,17 @@ models:
     platform: volcengine
     tier: T0
     role: candidate
-    enabled: false                        # 账号未开通：控制台激活后置 true
-    access_status: "needs_activation"     # 404 InvalidEndpointOrModel.NotFound
-    snapshot: "doubao-seed-2.1-pro-260915"
+    enabled: true                         # 2026-10-17 真实调用确认可调用
+    snapshot: "doubao-seed-2-1-pro-260915"  # 注意：连字符格式（2-1-pro），点号格式报404
     context_window: 1048576
-    verified: true                        # 价格经官方定价页核实（2026-10-17）
+    verified: true                        # 账号实测可调用（关思考后输出正常）+ 官方定价核实
     pricing:
       - {upto_input: 32768, input: 6.0, output: 30.0}
     cache_hit: 1.2
     disable_thinking_body:
       thinking:
         type: disabled
-    note: "方舟旗舰；方舟侧质量基线。需控制台开通后参与评测"
+    note: "方舟旗舰；方舟侧质量基线。曾有ID转录错误误判为未开通（点号vs连字符），已修正"
 
   qwen3.8-max:
     platform: aliyun
@@ -272,10 +271,10 @@ models:
   deepseek-v4-pro-official:
     platform: deepseek
     role: judge_official
-    enabled: false                        # .env 提供 DEEPSEEK_API_KEY 后置 true
-    snapshot: "deepseek-v4-pro"
+    enabled: true                         # 2026-10-17 Key 实测可用
+    snapshot: "deepseek-v4-pro"           # 官方API模型名（注意：不是 deepseek-v4.1-flash，官方无此名）
     context_window: 1048576
-    verified: false                       # Key 到位后实测
+    verified: true                        # 官方API实测：默认开思考，thinking=disabled 可关
     pricing:
       - {upto_input: 32768, input: 9.0, output: 27.0}
     cache_hit: 0.30
@@ -287,10 +286,10 @@ models:
   deepseek-v4.1-flash-official:
     platform: deepseek
     role: judge_official_backup
-    enabled: false
-    snapshot: "deepseek-v4.1-flash"
+    enabled: true
+    snapshot: "deepseek-flash"            # 官方API中 v4.1-flash 的模型名为 deepseek-flash
     context_window: 1000000
-    verified: false
+    verified: true                        # 官方API实测
     pricing:                               # 官方闲时=周末全天及工作日非9-12/14-18，半价
       - {upto_input: 32768, input: 2.0, output: 8.0, time_band: "peak"}
       - {upto_input: 32768, input: 1.0, output: 4.0, time_band: "off_peak"}
