@@ -1,7 +1,7 @@
-# 分派规则表（Dispatch Rules）v0.2（2026-10-16 修订）
+# 分派规则表（Dispatch Rules）v0.3（2026-10-17 修订）
 
 > **数据层文件**：与 model-registry.md 同步更新。评测完成后，以实测分难度性价比排名替换先验规则。
-> v0.2 修订：方舟 `doubao-seed-code`（2026-08-08 下线）、`doubao-seed-2.1-turbo`（2026-10-09 下线）已替换为继任候选 `doubao-seed-evolving` / `doubao-seed-2.1-lite`，价格待控制台核实。
+> v0.3 修订（双平台 Key 实测）：方舟侧模型全部切换为账号可调用的精确版本 ID；T1 换 `doubao-seed-2-0-code-preview`（code-preview 可调用，evolving 未开通）；价格全部核实。另新增思考链默认开启警告（见 registry）。
 
 ## 难度分级标准
 
@@ -16,14 +16,18 @@
 
 | 任务特征 | 首选 | 备选链 | 决策依据 |
 |---|---|---|---|
-| L1 入门 | T3 双平台竞速（`doubao-seed-2.0-mini` / `qwen3.7-flash`） | T2 → T1 → T0 | T3 单次成本0.001元级，比旗舰便宜10~25倍；L1先验判断可达标 |
-| L2 进阶 | T2（`doubao-seed-2.1-lite` / `qwen3.7-plus`） | T1 → T0 | 能力-成本平衡点；T3在L2稳定性不足。注：方舟原 turbo 已下线，lite 价格待核实 |
-| L3 高级 | T1（`doubao-seed-evolving` / `qwen3-coder-flash`） | T0 | 代码专项模型先验接近旗舰；百炼 coder-flash 成本仅为旗舰约1/12（API实测），方舟 evolving 价格与旗舰持平（待核实） |
-| L4 专家 | T0（`doubao-seed-2.1-pro` / `qwen3.8-max`） | T1 | 质量风险最高，失败重试的期望成本可能超过直接上旗舰 |
+| L1 入门 | T3 双平台竞速（`doubao-seed-2-0-mini-260428` / `qwen3.7-flash`） | T2 → T1 → T0 | T3 单次成本0.001元级，比旗舰便宜10~25倍；L1先验判断可达标 |
+| L2 进阶 | T2（`doubao-seed-2-1-lite-260915` / `qwen3.7-plus`） | T1 → T0 | 能力-成本平衡点；T3在L2稳定性不足。方舟 turbo 已下线，lite 实测 0.8/2.7 |
+| L3 高级 | T1（`doubao-seed-2-0-code-preview-260215` / `qwen3-coder-flash`） | T0 | 代码专项模型先验接近旗舰；百炼 coder-flash 成本仅为旗舰约1/12（API实测）；方舟 code-preview 3.2/16 约为旗舰一半 |
+| L4 专家 | T0（`doubao-seed-2.1-pro-260915` / `qwen3.8-max`） | T1 | 质量风险最高，失败重试的期望成本可能超过直接上旗舰 |
 | 实时敏感（≤5s） | 当前难度首选的轻量侧；仍超时则T3竞速 | — | 时延硬约束优先于成本优化 |
 | 质量优先（高价值任务） | T0 | T1 | 质量增益期望 > 2倍成本增量 |
 | 输入 >32K | 按实际阶梯价重算 S_value 后排序 | — | 跳档改变成本结构，默认档近似会失真 |
 | 隐私 = 仅本地 | **拒绝分派**，返回明确提示 | — | 当前无本地部署模型，不可静默降级到公有云 |
+
+> 调用方舟模型必须用精确版本 ID（plain name 报 404 InvalidEndpointOrModel.NotFound）；
+> 所有调用必须关闭思考链（方舟 `thinking:{type:disabled}`，百炼 `chat_template_kwargs.enable_thinking=false`）。
+> `doubao-seed-2.1-pro-260915` 需控制台开通后才可进入候选（当前账号 ModelNotOpen/NotFound）。
 
 **低置信度保守策略**：分类置信度 < 0.7 时难度升一档（L2按L3选候选）。依据：分类误差代价非对称——高派一级只浪费钱（可量化），低派一级导致质量返工（代价高且难量化）。
 

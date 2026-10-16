@@ -43,7 +43,9 @@ class ModelRegistry:
         return self.platforms[platform]
 
     def candidates(self):
-        return [m for m, c in self.models.items() if c.get("role") == "candidate"]
+        """参评模型列表（跳过 enabled=false 的未开通模型）。"""
+        return [m for m, c in self.models.items()
+                if c.get("role") == "candidate" and c.get("enabled", True)]
 
     def by_role(self, role):
         return [m for m, c in self.models.items() if c.get("role") == role]

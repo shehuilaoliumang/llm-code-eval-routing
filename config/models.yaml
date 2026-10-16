@@ -1,10 +1,13 @@
 # 模型档案配置（数据层）——与路由 Skill references/model-registry.md 同步
 # 价格单位：元/百万 Token
-# 价格来源：2026-10-17 阿里云百炼 DashScope /api/v1/models 接口实测（含阶梯/缓存/Batch价）；
-#           方舟侧价格来自官方定价页快照（2026-10-16），待方舟 key 到位后以同方式核验
-version: "0.3"
+# 价格来源：2026-10-17 双平台 Key 实测
+#   - 百炼：DashScope /api/v1/models API（含阶梯/缓存/Batch价）
+#   - 方舟：账号 models.list 实测可用性 + 官方定价页 volcengine.com/docs/82379/1544106
+# 关键实测结论：双平台模型均默认开启思考链（不关时 max_tokens 被无视、输出 3~10 倍），
+#   全部模型必须显式关闭：方舟 thinking:{type:disabled}；百炼 chat_template_kwargs.enable_thinking=false
+version: "0.4"
 snapshot_date: "2026-10-17"
-price_source: "aliyun_api_verified_2026-10-17 + volcengine_docs_2026-10-16"
+price_source: "dual_platform_key_verified_2026-10-17"
 
 platforms:
   volcengine:
@@ -18,19 +21,27 @@ platforms:
     api_key_env: "DASHSCOPE_API_KEY"
     protocol: "openai_compatible"
 
-# 参评模型（candidate）与裁判模型（judge / judge_default）
+# 方舟模型调用必须以精确版本 ID（models.list 实测）；plain name 报 InvalidEndpointOrModel.NotFound
+# enabled=false 表示账号未开通（控制台激活后可改 true）
+
 models:
   # ---------- T0 旗舰级 ----------
   doubao-seed-2.1-pro:
     platform: volcengine
     tier: T0
     role: candidate
-    snapshot: "doubao-seed-2.1-pro-0915"   # 以控制台接入点绑定版本为准
+    enabled: false                        # 账号未开通：控制台激活后置 true
+    access_status: "needs_activation"     # 404 InvalidEndpointOrModel.NotFound
+    snapshot: "doubao-seed-2.1-pro-260915"
     context_window: 1048576
-    verified: false                        # 价格来自文档快照，待方舟key核验
+    verified: true                        # 价格经官方定价页核实（2026-10-17）
     pricing:
       - {upto_input: 32768, input: 6.0, output: 30.0}
     cache_hit: 1.2
+    disable_thinking_body:
+      thinking:
+        type: disabled
+    note: "方舟旗舰；方舟侧质量基线。需控制台开通后参与评测"
 
   qwen3.8-max:
     platform: aliyun
@@ -48,7 +59,24 @@ models:
         enable_thinking: false
 
   # ---------- T1 代码专项级 ----------
-  # 注：qwen3-coder-plus 已退役（不在账号模型列表）；继任 qwen3-coder-flash（API实测价格）
+  # 方舟：doubao-seed-code/2.0-code 相继退役，2-0-code-preview-260215 为现行代码专项（账号可直接调用）
+  doubao-seed-2-0-code-preview:
+    platform: volcengine
+    tier: T1
+    role: candidate
+    snapshot: "doubao-seed-2-0-code-preview-260215"
+    context_window: 262144
+    verified: true                         # 账号实测可调用 + 官方定价核实
+    pricing:
+      - {upto_input: 32768, input: 3.2, output: 16.0}
+      - {upto_input: 131072, input: 4.8, output: 24.0}
+      - {upto_input: 262144, input: 9.6, output: 48.0}
+    cache_hit: 0.64
+    disable_thinking_body:
+      thinking:
+        type: disabled
+    note: "预览版代码专项模型；价格约为旗舰一半，验证『代码专项化』价值"
+
   qwen3-coder-flash:
     platform: aliyun
     tier: T1
@@ -66,31 +94,23 @@ models:
     disable_thinking_body:
       chat_template_kwargs:
         enable_thinking: false
-    note: "qwen3-coder-plus 退役后的代码专项继任；价格为旗舰的 1/12，T1经济性更强"
-
-  doubao-seed-evolving:
-    platform: volcengine
-    tier: T1
-    role: candidate
-    snapshot: "doubao-seed-evolving-0915"
-    context_window: 1048576
-    verified: false                        # doubao-seed-code 下线后的继任候选，价格待核实
-    pricing:
-      - {upto_input: 32768, input: 6.0, output: 30.0}
-    cache_hit: 1.2
-    note: "Coding & Agent 场景定位；与旗舰同价，用于隔离模型专项化效应"
+    note: "qwen3-coder-plus 退役后的代码专项继任；价格为旗舰的 1/12，T1经济性最强"
 
   # ---------- T2 均衡性价比级 ----------
   doubao-seed-2.1-lite:
     platform: volcengine
     tier: T2
     role: candidate
-    snapshot: "doubao-seed-2.1-lite-latest"
+    snapshot: "doubao-seed-2-1-lite-260915"
     context_window: 1048576
-    verified: false                        # doubao-seed-2.1-turbo 下线后的继任候选，价格待核实
+    verified: true                         # 账号实测可调用 + 官方定价核实
     pricing:
-      - {upto_input: 32768, input: 0.6, output: 3.6}      # 参照 doubao-seed-2.0-lite
-    note: "turbo 的实际替代；价格待控制台核实"
+      - {upto_input: 32768, input: 0.8, output: 2.7}
+    cache_hit: 0.16
+    disable_thinking_body:
+      thinking:
+        type: disabled
+    note: "turbo 的现行替代；多模态理解+代码能力，RPM 30k/TPM 5000k"
 
   qwen3.7-plus:
     platform: aliyun
@@ -113,13 +133,17 @@ models:
     platform: volcengine
     tier: T3
     role: candidate
-    snapshot: "doubao-seed-2.0-mini-latest"
+    snapshot: "doubao-seed-2-0-mini-260428"
     context_window: 262144
-    verified: false
+    verified: true                         # 账号实测可调用 + 官方定价核实
     pricing:
       - {upto_input: 32768, input: 0.2, output: 2.0}
       - {upto_input: 131072, input: 0.4, output: 4.0}
       - {upto_input: 262144, input: 0.8, output: 8.0}
+    cache_hit: 0.04
+    disable_thinking_body:
+      thinking:
+        type: disabled
 
   qwen3.7-flash:
     platform: aliyun
@@ -142,31 +166,79 @@ models:
   deepseek-v4-pro:
     platform: volcengine
     role: judge
+    snapshot: "deepseek-v4-pro-ga-260813"
     context_window: 1048576
-    verified: false                        # 方舟价 9/27 待核验；百炼同型为 12/24（API实测），方舟更便宜故裁判留方舟
+    verified: true                         # 账号实测可调用 + 官方定价核实
     pricing:
       - {upto_input: 32768, input: 9.0, output: 27.0}
-    note: "主力裁判 + 10%交叉验证；百炼亦托管此模型（12/24）"
+    cache_hit: 0.30
+    disable_thinking_body:
+      thinking:
+        type: disabled
+    note: "主力裁判 + 10%交叉验证；百炼亦托管（12/24，方舟更便宜）"
+
+  deepseek-v4.1-flash:
+    platform: volcengine
+    role: judge_default
+    snapshot: "deepseek-v4-1-flash-260910"
+    context_window: 1000000
+    verified: true                         # 账号实测可调用 + 官方定价核实
+    pricing:                               # 闲忙分时：高峰=工作日9-12/14-18，其余（含周末全天）为空闲
+      - {upto_input: 32768, input: 2.0, output: 8.0, time_band: "peak"}
+      - {upto_input: 32768, input: 1.0, output: 4.0, time_band: "off_peak"}
+    cache_hit: 0.04
+    disable_thinking_body:
+      thinking:
+        type: disabled
+    note: "默认全量评判（成本控制默认启用）；deepseek-v4-flash(3/9) 账号未开通；百炼同型 peak 2/8 off-peak 1/4"
+
+  # ---------- 备用/对照（账号未开通或备选） ----------
+  doubao-seed-evolving:
+    platform: volcengine
+    tier: T1
+    role: optional
+    enabled: false                        # ModelNotOpen：账号未开通
+    access_status: "needs_activation"
+    snapshot: "doubao-seed-evolving"
+    context_window: 1048576
+    verified: false
+    pricing:
+      - {upto_input: 32768, input: 6.0, output: 30.0}
+    cache_hit: 1.2
+    disable_thinking_body:
+      thinking:
+        type: disabled
+    note: "Coding&Agent 定位；与旗舰同价。开通后可作 T1 同价对照"
 
   deepseek-v4-flash:
     platform: volcengine
-    role: judge_default
+    role: optional
+    enabled: false                        # 账号未开通
+    access_status: "needs_activation"
+    snapshot: "deepseek-v4-flash-260425"
     context_window: 1048576
-    verified: false                        # 方舟价 3/9 待核验（百炼无此型号）
+    verified: false
     pricing:
       - {upto_input: 32768, input: 3.0, output: 9.0}
-    note: "默认全量评判（成本控制默认启用）；百炼替代选项为 deepseek-v4.1-flash（闲忙 1/4~2/8，API实测）"
+    cache_hit: 0.10
+    disable_thinking_body:
+      thinking:
+        type: disabled
 
-  # ---------- 百炼托管的备用裁判/对照（API 实测可用） ----------
-  deepseek-v4.1-flash:
-    platform: aliyun
-    role: judge_backup
+  glm-5.2:
+    platform: volcengine
+    tier: T0
+    role: optional
+    snapshot: "glm-5-2-260617"
     context_window: 1000000
-    verified: true
-    pricing:                               # 闲忙分时：off_peak 1/4, peak 2/8
-      - {upto_input: 32768, input: 2.0, output: 8.0, time_band: "peak"}
-      - {upto_input: 32768, input: 1.0, output: 4.0, time_band: "off_peak"}
-    note: "廉价裁判后备（峰值价全量评判约8.5元）；亦为潜在高性价比能力模型候选"
+    verified: true                         # 账号实测可调用 + 官方定价核实
+    pricing:
+      - {upto_input: 1000000, input: 8.0, output: 28.0}
+    cache_hit: 2.0
+    disable_thinking_body:
+      thinking:
+        type: disabled
+    note: "第三方旗舰对照；默认不开评，需要时置 role=candidate"
 
   glm-5.3:
     platform: aliyun
@@ -178,3 +250,14 @@ models:
       - {upto_input: 1000000, input: 8.0, output: 28.0}
     cache_hit: 2.0
     note: "第三方旗舰对照；双平台同价，默认走方舟（裁判独立性叙事更干净）"
+
+  deepseek-v4.1-flash-aliyun:
+    platform: aliyun
+    role: judge_backup
+    snapshot: "deepseek-v4.1-flash"
+    context_window: 1000000
+    verified: true
+    pricing:                               # 闲忙分时：off_peak 1/4, peak 2/8
+      - {upto_input: 32768, input: 2.0, output: 8.0, time_band: "peak"}
+      - {upto_input: 32768, input: 1.0, output: 4.0, time_band: "off_peak"}
+    note: "百炼侧廉价裁判后备（方舟故障时切换）"

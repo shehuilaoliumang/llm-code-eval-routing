@@ -64,18 +64,22 @@ python run_eval.py --manifest-only --tag v1
 - 质量总分 `S_quality = 0.30×语法 + 0.40×功能(单测) + 0.20×规范 + 0.10×健壮(裁判)`
 - 及格线 L1/L2=60、L3=65、L4=70
 - 成本按**阶梯计价**（输入长度查档），单次成本精确到分
-- 裁判默认 `deepseek-v4-flash` 全量 + `deepseek-v4-pro` 10% 交叉验证（成本控制默认启用）
+- 裁判默认 `deepseek-v4-1-flash` 全量 + `deepseek-v4-pro-ga` 10% 交叉验证（成本控制默认启用）
+- **思考链必须显式关闭**（2026-10-17 实测）：双平台默认开启，不关时 `max_tokens` 被无视、输出膨胀 3~10 倍。方舟传 `thinking:{"type":"disabled"}`，百炼传 `chat_template_kwargs.enable_thinking=false`（配置在各模型的 `disable_thinking_body` 字段）
 
 ## 数据 schema（附录B）
 
-每次生成一条 JSONL 记录：`task_id / difficulty / platform / model / model_version(快照) / run /
-syntax_score / functional_score / style_score / robustness_score / quality_total / passed /
-input_tokens / output_tokens / input_tier / cost_yuan / latency_seconds / code / test_details`。
+每次生成两条 JSONL 记录：`generation`（生成+自动判分）与 `scored`（+裁判分+综合分+是否及格）。
+字段：`task_id / difficulty / platform / model / model_version(快照) / run / syntax_score /
+functional_score / style_score / robustness_score / quality_total / passed / input_tokens /
+output_tokens / input_tier / cost_yuan / latency_seconds / code / test_details`。
 
 ## 当前状态
 
-- [x] 工程骨架 + 双平台客户端 + 自动判分 + 沙箱 + 裁判 + manifest（17项本地测试通过）
+- [x] 工程骨架 + 双平台客户端 + 自动判分 + 沙箱 + 裁判 + manifest（19项本地测试通过）
 - [x] 8 题种子任务集（参考实现全部通过各自测试，回归保护）
-- [ ] 控制台核实 3 项（turbo/seed-code 状态、evolving/lite/v4.1-flash 价格、qwen3-coder-plus 价格限流）
+- [x] **双平台 Key 验证 + 控制台核实完成（2026-10-17）**：7 款模型实测可调用、价格全部经官方来源核实、模型矩阵定稿（方舟旗舰 `doubao-seed-2.1-pro-260915` 待控制台开通）
+- [x] **第 1 笔试跑完成（67 次真实 API 调用，生成侧名义成本 0.15 元）**：全链路（调用→提取→沙箱→判分→裁判→记录）验证通过；裁判链路（v4.1-flash 全评 + v4-pro 抽验）正常
+- [ ] 控制台开通 `doubao-seed-2.1-pro-260915`（方舟旗舰，开通后入 T0 矩阵，+约5元）
 - [ ] 完整 48 题测试集（公开基准改编为主）
-- [ ] key 到位后试跑 → 决策门 → 全量评测
+- [ ] 第 2 笔释放：全量评测（48题 × 7~8模型 × 3次，预计约 11 元）

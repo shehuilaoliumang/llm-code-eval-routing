@@ -122,8 +122,10 @@ class EvaluationRunner:
             row.get("syntax_score", 0), row.get("functional_score", 0),
             style, robust, self.weights), 2)
         row["passed"] = row["quality_total"] >= self.cfg.pass_line(task["difficulty"])
-        self.recorder.write({"type": "scored", **{k: v for k, v in row.items()
-                                                  if k != "raw_output"}})
+        # 注意：type 必须放在 ** 解包之后（或从解包中排除），否则被 row 的 generation 覆盖
+        scored = {k: v for k, v in row.items() if k not in ("raw_output", "type")}
+        scored["type"] = "scored"
+        self.recorder.write(scored)
 
     def _judge_once(self, judge_model: str, task: Dict, code: str):
         judge_cfg = self.registry.get(judge_model)

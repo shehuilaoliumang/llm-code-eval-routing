@@ -16,7 +16,7 @@ generation:
   runs_per_task: 3               # 每题每模型重复次数
 
 judge:
-  model: deepseek-v4-flash       # 默认全量评判（成本控制默认启用）
+  model: deepseek-v4.1-flash     # 默认全量评判（成本控制默认启用；方舟闲时 1/4、忙时 2/8）
   cross_check_model: deepseek-v4-pro
   cross_check_ratio: 0.10        # 10% 样本用主力裁判交叉验证
   temperature: 0

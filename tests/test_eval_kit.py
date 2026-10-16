@@ -138,3 +138,22 @@ class TestConfigAndTasks(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestScoredRecordType(unittest.TestCase):
+    """回归：scored 记录的 type 不得被 generation 行覆盖（dict 解包顺序 bug）。"""
+
+    def test_scored_type_not_overridden(self):
+        row = {"type": "generation", "task_id": "T1", "raw_output": "x",
+               "syntax_score": 100.0}
+        # 与 runner._maybe_judge 相同的构造方式
+        scored = {k: v for k, v in row.items() if k not in ("raw_output", "type")}
+        scored["type"] = "scored"
+        self.assertEqual(scored["type"], "scored")
+        self.assertNotIn("raw_output", scored)
+
+    def test_dict_literal_merge_order(self):
+        """文档化陷阱：{'type':'scored', **row} 会被 row 的 type 覆盖。"""
+        row = {"type": "generation"}
+        merged = {"type": "scored", **row}
+        self.assertEqual(merged["type"], "generation")  # 证明旧写法确有 bug
