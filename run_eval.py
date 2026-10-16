@@ -26,7 +26,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from eval_kit.clients import DualPlatformClient, MockClient
-from eval_kit.config import EvalConfig, ModelRegistry, load_yaml
+from eval_kit.config import EvalConfig, ModelRegistry, load_dotenv, load_yaml
 from eval_kit.manifest import build_manifest, save_manifest
 from eval_kit.recorder import JSONLRecorder
 from eval_kit.runner import load_tasks, make_runner
@@ -49,6 +49,7 @@ def main():
     ap.add_argument("--manifest-only", action="store_true", help="只生成 manifest")
     args = ap.parse_args()
 
+    load_dotenv(os.path.join(ROOT, ".env"))
     models_cfg = load_yaml(args.models)
     eval_cfg_raw = load_yaml(args.eval_config)
     registry = ModelRegistry(models_cfg)

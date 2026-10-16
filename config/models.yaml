@@ -1,8 +1,10 @@
 # 模型档案配置（数据层）——与路由 Skill references/model-registry.md 同步
-# 价格单位：元/百万 Token；快照日期 2026-10-16
-# verified: false 的价格为待控制台核实估计值（evolving/lite/v4.1-flash 为下线模型继任候选）
-version: "0.2"
-snapshot_date: "2026-10-16"
+# 价格单位：元/百万 Token
+# 价格来源：2026-10-17 阿里云百炼 DashScope /api/v1/models 接口实测（含阶梯/缓存/Batch价）；
+#           方舟侧价格来自官方定价页快照（2026-10-16），待方舟 key 到位后以同方式核验
+version: "0.3"
+snapshot_date: "2026-10-17"
+price_source: "aliyun_api_verified_2026-10-17 + volcengine_docs_2026-10-16"
 
 platforms:
   volcengine:
@@ -16,7 +18,7 @@ platforms:
     api_key_env: "DASHSCOPE_API_KEY"
     protocol: "openai_compatible"
 
-# 参评模型（candidate）与裁判模型（judge / judge_cross）
+# 参评模型（candidate）与裁判模型（judge / judge_default）
 models:
   # ---------- T0 旗舰级 ----------
   doubao-seed-2.1-pro:
@@ -25,8 +27,8 @@ models:
     role: candidate
     snapshot: "doubao-seed-2.1-pro-0915"   # 以控制台接入点绑定版本为准
     context_window: 1048576
-    verified: true
-    pricing:                              # 阶梯价，按单次请求输入token数选档
+    verified: false                        # 价格来自文档快照，待方舟key核验
+    pricing:
       - {upto_input: 32768, input: 6.0, output: 30.0}
     cache_hit: 1.2
 
@@ -35,13 +37,37 @@ models:
     tier: T0
     role: candidate
     snapshot: "qwen3.8-max-0902"
-    context_window: 1048576
-    verified: true
+    context_window: 1000000
+    verified: true                         # API 实测
     pricing:
-      - {upto_input: 1048576, input: 12.0, output: 36.0}   # 限时5折以控制台为准
-    cache_hit: 2.4
+      - {upto_input: 1000000, input: 12.0, output: 36.0}   # 限时折扣以控制台为准
+    cache_hit: 1.5                         # API 实测（原快照 2.4 有误）
+    batch_price: {input: 6.0, output: 18.0}
+    disable_thinking_body:
+      chat_template_kwargs:
+        enable_thinking: false
 
   # ---------- T1 代码专项级 ----------
+  # 注：qwen3-coder-plus 已退役（不在账号模型列表）；继任 qwen3-coder-flash（API实测价格）
+  qwen3-coder-flash:
+    platform: aliyun
+    tier: T1
+    role: candidate
+    snapshot: "qwen3-coder-flash"
+    context_window: 1000000
+    max_output_tokens: 65536
+    verified: true                         # API 实测
+    pricing:
+      - {upto_input: 32768, input: 1.0, output: 4.0}
+      - {upto_input: 131072, input: 1.5, output: 6.0}
+      - {upto_input: 262144, input: 2.5, output: 10.0}
+      - {upto_input: 1000000, input: 5.0, output: 25.0}
+    cache_hit: 0.2
+    disable_thinking_body:
+      chat_template_kwargs:
+        enable_thinking: false
+    note: "qwen3-coder-plus 退役后的代码专项继任；价格为旗舰的 1/12，T1经济性更强"
+
   doubao-seed-evolving:
     platform: volcengine
     tier: T1
@@ -53,20 +79,6 @@ models:
       - {upto_input: 32768, input: 6.0, output: 30.0}
     cache_hit: 1.2
     note: "Coding & Agent 场景定位；与旗舰同价，用于隔离模型专项化效应"
-
-  qwen3-coder-plus:
-    platform: aliyun
-    tier: T1
-    role: candidate
-    snapshot: "qwen3-coder-plus-2025-09-23"
-    context_window: 262144
-    verified: true
-    pricing:
-      - {upto_input: 32768, input: 4.0, output: 16.0}
-      - {upto_input: 131072, input: 6.0, output: 24.0}
-      - {upto_input: 262144, input: 10.0, output: 40.0}
-      - {upto_input: 1048576, input: 20.0, output: 200.0}
-    rate_limit: "RPM 60 / TPM 100万（批量需低并发）"
 
   # ---------- T2 均衡性价比级 ----------
   doubao-seed-2.1-lite:
@@ -85,12 +97,16 @@ models:
     tier: T2
     role: candidate
     snapshot: "qwen3.7-plus-2026-05-26"
-    context_window: 262144
-    verified: true
+    context_window: 1000000
+    verified: true                         # API 实测
     pricing:
       - {upto_input: 262144, input: 2.0, output: 8.0}     # 限时8折以控制台为准
-      - {upto_input: 1048576, input: 6.0, output: 24.0}
+      - {upto_input: 1000000, input: 6.0, output: 24.0}
     cache_hit: 0.4
+    batch_price: {input: 1.0, output: 4.0}
+    disable_thinking_body:
+      chat_template_kwargs:
+        enable_thinking: false
 
   # ---------- T3 轻量级 ----------
   doubao-seed-2.0-mini:
@@ -99,7 +115,7 @@ models:
     role: candidate
     snapshot: "doubao-seed-2.0-mini-latest"
     context_window: 262144
-    verified: true
+    verified: false
     pricing:
       - {upto_input: 32768, input: 0.2, output: 2.0}
       - {upto_input: 131072, input: 0.4, output: 4.0}
@@ -110,49 +126,55 @@ models:
     tier: T3
     role: candidate
     snapshot: "qwen3.7-flash-2026-07-15"
-    context_window: 1048576
-    verified: true
+    context_window: 1000000
+    verified: true                         # API 实测
     pricing:
       - {upto_input: 32768, input: 0.2, output: 0.8}
       - {upto_input: 262144, input: 0.6, output: 2.4}
-      - {upto_input: 1048576, input: 1.2, output: 4.8}
+      - {upto_input: 1000000, input: 1.2, output: 4.8}
+    cache_hit: 0.04
+    batch_price: {input: 0.1, output: 0.4}
+    disable_thinking_body:
+      chat_template_kwargs:
+        enable_thinking: false
 
   # ---------- 裁判模型（非参评） ----------
   deepseek-v4-pro:
     platform: volcengine
     role: judge
     context_window: 1048576
-    verified: true
+    verified: false                        # 方舟价 9/27 待核验；百炼同型为 12/24（API实测），方舟更便宜故裁判留方舟
     pricing:
       - {upto_input: 32768, input: 9.0, output: 27.0}
-    note: "主力裁判；同时用于10%样本交叉验证"
+    note: "主力裁判 + 10%交叉验证；百炼亦托管此模型（12/24）"
 
   deepseek-v4-flash:
     platform: volcengine
     role: judge_default
     context_window: 1048576
-    verified: true
+    verified: false                        # 方舟价 3/9 待核验（百炼无此型号）
     pricing:
       - {upto_input: 32768, input: 3.0, output: 9.0}
-    note: "默认全量评判（成本控制默认启用）；与单测通过率相关性过低时回退 deepseek-v4-pro"
+    note: "默认全量评判（成本控制默认启用）；百炼替代选项为 deepseek-v4.1-flash（闲忙 1/4~2/8，API实测）"
 
-  # ---------- 可选对照（按需增选） ----------
+  # ---------- 百炼托管的备用裁判/对照（API 实测可用） ----------
+  deepseek-v4.1-flash:
+    platform: aliyun
+    role: judge_backup
+    context_window: 1000000
+    verified: true
+    pricing:                               # 闲忙分时：off_peak 1/4, peak 2/8
+      - {upto_input: 32768, input: 2.0, output: 8.0, time_band: "peak"}
+      - {upto_input: 32768, input: 1.0, output: 4.0, time_band: "off_peak"}
+    note: "廉价裁判后备（峰值价全量评判约8.5元）；亦为潜在高性价比能力模型候选"
+
   glm-5.3:
-    platform: volcengine
+    platform: aliyun
     tier: T0
     role: optional
-    context_window: 1048576
-    verified: true
+    context_window: 1000000
+    verified: true                         # 百炼 API 实测 8/28（与方舟同价）
     pricing:
-      - {upto_input: 1048576, input: 8.0, output: 28.0}
+      - {upto_input: 1000000, input: 8.0, output: 28.0}
     cache_hit: 2.0
-
-  deepseek-v4.1-flash:
-    platform: volcengine
-    tier: T1
-    role: optional
-    context_window: 1048576
-    verified: false                        # 2026-09 新上，价格待核实（约1~2/4~8，闲忙分时）
-    pricing:
-      - {upto_input: 32768, input: 1.5, output: 6.0}
-    note: "潜在高性价比能力模型，待核实"
+    note: "第三方旗舰对照；双平台同价，默认走方舟（裁判独立性叙事更干净）"

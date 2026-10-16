@@ -54,7 +54,8 @@ class DualPlatformClient:
 
     def chat(self, platform: str, model: str, messages: List[Dict],
              temperature: float = 0.2, top_p: float = 0.9,
-             max_tokens: int = 4096, timeout: float = 30) -> ChatResult:
+             max_tokens: int = 4096, timeout: float = 30,
+             extra_body: Optional[Dict] = None) -> ChatResult:
         client = self._get_openai_client(platform)
         attempts = 0
         last_error = None
@@ -69,6 +70,7 @@ class DualPlatformClient:
                     top_p=top_p,
                     max_tokens=max_tokens,
                     timeout=timeout,
+                    extra_body=extra_body or None,
                 )
                 latency = time.perf_counter() - start
                 usage = resp.usage

@@ -24,10 +24,10 @@ class TestPricing(unittest.TestCase):
         self.registry = ModelRegistry(load_yaml(os.path.join(ROOT, "config", "models.yaml")))
 
     def test_tier_selection(self):
-        cfg = self.registry.get("qwen3-coder-plus")
-        self.assertEqual(select_tier(cfg["pricing"], 1000), (4.0, 16.0))
-        self.assertEqual(select_tier(cfg["pricing"], 50000), (6.0, 24.0))
-        self.assertEqual(select_tier(cfg["pricing"], 500000), (20.0, 200.0))
+        cfg = self.registry.get("qwen3-coder-flash")
+        self.assertEqual(select_tier(cfg["pricing"], 1000), (1.0, 4.0))
+        self.assertEqual(select_tier(cfg["pricing"], 50000), (1.5, 6.0))
+        self.assertEqual(select_tier(cfg["pricing"], 500000), (5.0, 25.0))
 
     def test_cost_calculation(self):
         cfg = self.registry.get("doubao-seed-2.0-mini")
@@ -36,7 +36,7 @@ class TestPricing(unittest.TestCase):
         self.assertAlmostEqual(cost, 1500 / 1e6 * 0.2 + 800 / 1e6 * 2.0, places=8)
 
     def test_tier_name(self):
-        cfg = self.registry.get("qwen3-coder-plus")
+        cfg = self.registry.get("qwen3-coder-flash")
         self.assertEqual(tier_name(cfg, 1000), "0-32K")
         self.assertEqual(tier_name(cfg, 50000), "32-128K")
         self.assertEqual(tier_name(cfg, 500000), "256K-1M")

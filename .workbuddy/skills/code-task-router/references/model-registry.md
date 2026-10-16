@@ -21,7 +21,7 @@
 | T0 旗舰 | 阿里云百炼 | `qwen3.8-max` | 12 / 36（限时5折） | 2.4 | 1M | RPM 30000 | 通用最强（2.4T MoE） |
 | T1 代码专项 | 火山方舟 | `doubao-seed-evolving` | 待核实（约 6 / 30） | 待核实 | 1024K | 宽松 | Coding & Agent 场景继任模型；价格与旗舰持平，性价比优势待评估 |
 | T1 备选 | 火山方舟 | `deepseek-v4.1-flash` | 待核实（约 1~2 / 4~8，闲忙分时） | 待核实 | 1024K | 宽松 | 2026-09 新上，多模态，潜在高性价比能力模型 |
-| T1 代码专项 | 阿里云百炼 | `qwen3-coder-plus` | 4 / 16 | — | 256K | RPM 60（偏紧，需低并发） | 代码专项，Agent能力强 |
+| T1 代码专项 | 阿里云百炼 | `qwen3-coder-flash` | 1 / 4（API实测） | 0.2 | 1M | 宽松 | 代码专项；价格为旗舰1/12，T1经济性担当（qwen3-coder-plus已退役） |
 | T2 均衡 | 火山方舟 | `doubao-seed-2.1-lite` | 待核实（参照 2.0-lite 0.6 / 3.6） | 待核实 | 1024K | 宽松 | 标准类，turbo 的实际替代 |
 | T2 均衡 | 阿里云百炼 | `qwen3.7-plus` | 2 / 8（限时8折） | 0.4 | 256K | 宽松 | 均衡款，生态成熟 |
 | T3 轻量 | 火山方舟 | `doubao-seed-2.0-mini` | 0.2 / 2 | — | 256K | 宽松 | 简单任务可用 |
@@ -35,7 +35,7 @@
 | `qwen3.8-max` | 0.047（5折后 0.023） |
 | `doubao-seed-evolving` | 待核实（约 0.033，按 6/30 估） |
 | `deepseek-v4.1-flash` | 待核实（约 0.005~0.01，按 1~2/4~8 估） |
-| `qwen3-coder-plus` | 0.019 |
+| `qwen3-coder-flash` | 0.005（API实测 1/4，输入1500/输出800） |
 | `doubao-seed-2.1-lite` | 待核实（约 0.003~0.005，参照 2.0-lite 估） |
 | `qwen3.7-plus` | 0.009（8折后 0.008） |
 | `doubao-seed-2.0-mini` | 0.002 |
@@ -59,7 +59,7 @@
 | `qwen3.8-max` | 95 | 90 | 85 | 80 |
 | `doubao-seed-evolving` | 92 | 88 | 84 | 76 |
 | `deepseek-v4.1-flash` | 90 | 85 | 80 | 70 |
-| `qwen3-coder-plus` | 92 | 87 | 83 | 74 |
+| `qwen3-coder-flash` | 91 | 86 | 82 | 72 |
 | `doubao-seed-2.1-lite` | 90 | 84 | 76 | 65 |
 | `qwen3.7-plus` | 93 | 86 | 80 | 70 |
 | `doubao-seed-2.0-mini` | 80 | 70 | 55 | 40 |

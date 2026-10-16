@@ -18,7 +18,7 @@
 |---|---|---|---|
 | L1 入门 | T3 双平台竞速（`doubao-seed-2.0-mini` / `qwen3.7-flash`） | T2 → T1 → T0 | T3 单次成本0.001元级，比旗舰便宜10~25倍；L1先验判断可达标 |
 | L2 进阶 | T2（`doubao-seed-2.1-lite` / `qwen3.7-plus`） | T1 → T0 | 能力-成本平衡点；T3在L2稳定性不足。注：方舟原 turbo 已下线，lite 价格待核实 |
-| L3 高级 | T1（`doubao-seed-evolving` / `qwen3-coder-plus`） | T0 | 代码专项模型先验接近旗舰；方舟 evolving 价格与旗舰持平（待核实），百炼 coder-plus 成本约为旗舰1/3 |
+| L3 高级 | T1（`doubao-seed-evolving` / `qwen3-coder-flash`） | T0 | 代码专项模型先验接近旗舰；百炼 coder-flash 成本仅为旗舰约1/12（API实测），方舟 evolving 价格与旗舰持平（待核实） |
 | L4 专家 | T0（`doubao-seed-2.1-pro` / `qwen3.8-max`） | T1 | 质量风险最高，失败重试的期望成本可能超过直接上旗舰 |
 | 实时敏感（≤5s） | 当前难度首选的轻量侧；仍超时则T3竞速 | — | 时延硬约束优先于成本优化 |
 | 质量优先（高价值任务） | T0 | T1 | 质量增益期望 > 2倍成本增量 |

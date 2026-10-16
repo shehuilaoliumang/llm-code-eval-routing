@@ -21,11 +21,12 @@ def cost_yuan(model_cfg, input_tokens, output_tokens):
 
 
 def tier_name(model_cfg, input_tokens):
-    """返回输入所属阶梯档位名称（用于数据记录）。"""
+    """返回输入所属阶梯档位名称（用于数据记录）。档位边界按平台惯例：
+    32K=32768, 128K=131072, 256K=262144, 1M=1000000（十进制）。"""
     for tier in model_cfg["pricing"]:
         if input_tokens <= tier["upto_input"]:
             bound = tier["upto_input"]
-            if bound >= 1_048_576:
+            if bound >= 1_000_000:
                 return "256K-1M"
             if bound >= 262_144:
                 return "128-256K"

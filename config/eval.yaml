@@ -1,5 +1,11 @@
 # 评测执行配置（口径层）——全模型完全一致，改动需升版本号并重生成 manifest
-version: "1.0"
+version: "1.1"
+
+# 思考链控制（2026-10-17 实测）：Qwen 系默认开启思考，且开启时 max_tokens 被无视、
+# 输出可达 10 倍（750 vs 23 tokens）。必须显式关闭，机制配置在各模型的
+# disable_thinking_body 字段（百炼 Qwen：chat_template_kwargs.enable_thinking=false；
+# 方舟 Doubao 机制待 key 到位后实测补充）。
+disable_thinking: true
 
 generation:
   temperature: 0.2

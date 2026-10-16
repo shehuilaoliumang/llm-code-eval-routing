@@ -1,6 +1,21 @@
 """配置加载：models.yaml（模型档案数据层）与 eval.yaml（评测口径层）。"""
 
+import os
+
 import yaml
+
+
+def load_dotenv(path: str = ".env") -> bool:
+    """加载 .env 中的环境变量（setdefault，不覆盖已有值）。返回是否找到文件。"""
+    if not os.path.exists(path):
+        return False
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip())
+    return True
 
 
 def load_yaml(path):

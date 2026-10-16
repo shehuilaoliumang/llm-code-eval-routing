@@ -37,14 +37,14 @@ PLATFORM = {
     "doubao-seed-2.1-lite": "volcengine",
     "doubao-seed-2.0-mini": "volcengine",
     "qwen3.8-max": "aliyun",
-    "qwen3-coder-plus": "aliyun",
+    "qwen3-coder-flash": "aliyun",
     "qwen3.7-plus": "aliyun",
     "qwen3.7-flash": "aliyun",
 }
 
 TIER = {  # 档位，用于备选链构造
     "doubao-seed-2.1-pro": "T0", "qwen3.8-max": "T0",
-    "doubao-seed-evolving": "T1", "qwen3-coder-plus": "T1",
+    "doubao-seed-evolving": "T1", "qwen3-coder-flash": "T1",
     "doubao-seed-2.1-lite": "T2", "qwen3.7-plus": "T2",
     "doubao-seed-2.0-mini": "T3", "qwen3.7-flash": "T3",
 }
@@ -53,7 +53,7 @@ PRIOR_QUALITY = {  # 分难度先验质量分
     "doubao-seed-2.1-pro": {"L1": 95, "L2": 90, "L3": 85, "L4": 80},
     "qwen3.8-max": {"L1": 95, "L2": 90, "L3": 85, "L4": 80},
     "doubao-seed-evolving": {"L1": 92, "L2": 88, "L3": 84, "L4": 76},
-    "qwen3-coder-plus": {"L1": 92, "L2": 87, "L3": 83, "L4": 74},
+    "qwen3-coder-flash": {"L1": 91, "L2": 86, "L3": 82, "L4": 72},
     "doubao-seed-2.1-lite": {"L1": 90, "L2": 84, "L3": 76, "L4": 65},
     "qwen3.7-plus": {"L1": 93, "L2": 86, "L3": 80, "L4": 70},
     "doubao-seed-2.0-mini": {"L1": 80, "L2": 70, "L3": 55, "L4": 40},
@@ -62,7 +62,7 @@ PRIOR_QUALITY = {  # 分难度先验质量分
 
 UNIT_COST = {  # 单次成本（元，0-32K档，输入1500/输出800假设；带"约"者为待核实估计）
     "doubao-seed-2.1-pro": 0.033, "qwen3.8-max": 0.047,
-    "doubao-seed-evolving": 0.033, "qwen3-coder-plus": 0.019,
+    "doubao-seed-evolving": 0.033, "qwen3-coder-flash": 0.005,
     "doubao-seed-2.1-lite": 0.004, "qwen3.7-plus": 0.009,
     "doubao-seed-2.0-mini": 0.002, "qwen3.7-flash": 0.001,
 }
@@ -99,7 +99,7 @@ def route_by_rule(task, d):
         reason = "L4专家级/高价值任务，旗舰兜底"
     elif d == "L3":
         primary = "doubao-seed-evolving"
-        chain = ["qwen3-coder-plus", "doubao-seed-2.1-pro"]
+        chain = ["qwen3-coder-flash", "doubao-seed-2.1-pro"]
         reason = "L3高级，代码专项模型性价比最优"
     elif d == "L2":
         primary = "doubao-seed-2.1-lite"

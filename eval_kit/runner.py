@@ -32,6 +32,15 @@ class EvaluationRunner:
         self.gen = eval_cfg.generation
         self.judge_cfg = eval_cfg.judge
         self.cross_check_ratio = cross_check_ratio
+        self.disable_thinking = eval_cfg.cfg.get("disable_thinking", True)
+
+    def _extra_body(self, model_cfg):
+        """按口径关闭思考链（默认关闭）。各平台机制不同，配置在 models.yaml
+        的 disable_thinking_body 字段。实测：Qwen 系不关时 max_tokens 被无视，
+        输出可达 10 倍（思考链计入输出），必须显式关闭。"""
+        if not self.disable_thinking:
+            return None
+        return model_cfg.get("disable_thinking_body")
 
     # ---------- 单次生成 + 判分 ----------
     def run_one(self, task: Dict, model_id: str, run_idx: int) -> Dict:
@@ -50,6 +59,7 @@ class EvaluationRunner:
             top_p=self.gen["top_p"],
             max_tokens=self.gen["max_tokens"],
             timeout=self.gen["timeout_seconds"],
+            extra_body=self._extra_body(model_cfg),
         )
         row = {
             "type": "generation",
@@ -126,6 +136,7 @@ class EvaluationRunner:
             temperature=self.judge_cfg["temperature"],
             max_tokens=self.judge_cfg["max_tokens"],
             timeout=self.judge_cfg["timeout_seconds"],
+            extra_body=self._extra_body(judge_cfg),
         )
         if result.error:
             return 0, 0, result.error
