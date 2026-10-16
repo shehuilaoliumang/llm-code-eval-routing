@@ -6,6 +6,8 @@ import os
 import subprocess
 from datetime import datetime, timezone
 
+from . import __version__
+
 
 def _sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
@@ -39,7 +41,7 @@ def build_manifest(eval_cfg: dict, registry, task_path: str,
         }
     return {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "kit_version": "eval_kit 0.1.0",
+        "kit_version": f"eval_kit {__version__}",
         "git_commit": _git_commit(),
         "eval_config_sha256": _sha256_file(eval_cfg_path),
         "models_config_sha256": _sha256_file(models_cfg_path),

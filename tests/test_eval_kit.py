@@ -167,12 +167,12 @@ class TestConfigAndTasks(unittest.TestCase):
         self.assertEqual(dev, hold, "dev/holdout 应各24题")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TestScoredRecordType(unittest.TestCase):
     """回归：scored 记录的 type 不得被 generation 行覆盖（dict 解包顺序 bug）。"""
+
+    def setUp(self):
+        from eval_kit.recorder import JSONLRecorder
+        self.JSONLRecorder = JSONLRecorder
 
     def test_scored_type_not_overridden(self):
         row = {"type": "generation", "task_id": "T1", "raw_output": "x",
@@ -188,3 +188,7 @@ class TestScoredRecordType(unittest.TestCase):
         row = {"type": "generation"}
         merged = {"type": "scored", **row}
         self.assertEqual(merged["type"], "generation")  # 证明旧写法确有 bug
+
+
+if __name__ == "__main__":
+    unittest.main()
