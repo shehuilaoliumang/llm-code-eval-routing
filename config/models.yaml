@@ -20,6 +20,12 @@ platforms:
     base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
     api_key_env: "DASHSCOPE_API_KEY"
     protocol: "openai_compatible"
+  deepseek:
+    display: "DeepSeek 官方"
+    base_url: "https://api.deepseek.com"
+    api_key_env: "DEEPSEEK_API_KEY"
+    protocol: "openai_compatible"
+    status: "ready_key_pending"             # 用户已表示可提供 Key；到位后在 .env 配置即可启用
 
 # 方舟模型调用必须以精确版本 ID（models.list 实测）；plain name 报 InvalidEndpointOrModel.NotFound
 # enabled=false 表示账号未开通（控制台激活后可改 true）
@@ -261,3 +267,35 @@ models:
       - {upto_input: 32768, input: 2.0, output: 8.0, time_band: "peak"}
       - {upto_input: 32768, input: 1.0, output: 4.0, time_band: "off_peak"}
     note: "百炼侧廉价裁判后备（方舟故障时切换）"
+
+  # ---------- DeepSeek 官方通道（Key 待提供，预置即启用） ----------
+  deepseek-v4-pro-official:
+    platform: deepseek
+    role: judge_official
+    enabled: false                        # .env 提供 DEEPSEEK_API_KEY 后置 true
+    snapshot: "deepseek-v4-pro"
+    context_window: 1048576
+    verified: false                       # Key 到位后实测
+    pricing:
+      - {upto_input: 32768, input: 9.0, output: 27.0}
+    cache_hit: 0.30
+    disable_thinking_body:
+      thinking:
+        type: disabled
+    note: "官方裁判通道：裁判独立性的最强形态（厂商官方API、非参评模型、与两平台无利益关系）。启用：eval.yaml judge.model 改指本模型，或用于交叉验证"
+
+  deepseek-v4.1-flash-official:
+    platform: deepseek
+    role: judge_official_backup
+    enabled: false
+    snapshot: "deepseek-v4.1-flash"
+    context_window: 1000000
+    verified: false
+    pricing:                               # 官方闲时=周末全天及工作日非9-12/14-18，半价
+      - {upto_input: 32768, input: 2.0, output: 8.0, time_band: "peak"}
+      - {upto_input: 32768, input: 1.0, output: 4.0, time_band: "off_peak"}
+    cache_hit: 0.04
+    disable_thinking_body:
+      thinking:
+        type: disabled
+    note: "官方廉价裁判/能力对照候选"

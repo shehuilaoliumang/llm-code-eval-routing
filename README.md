@@ -20,13 +20,19 @@
 │   ├── recorder.py          #   JSONL 全量记录（附录B schema）
 │   ├── manifest.py          #   可复现 manifest（快照/提示词哈希/参数）
 │   ├── runner.py            #   评测执行器
+│   ├── dashboard.py         #   可视化仪表盘生成器
 │   └── config.py            #   配置加载
 ├── data/
 │   ├── tasks/tasks_v1.json  # 任务集（当前8题种子；完整48题阶段一构建）
-│   └── results/             # 评测输出（JSONL）
+│   └── results/             # 评测输出（JSONL，gitignore 拦截）
 ├── manifests/               # 版本 manifest
-├── tests/                   # 本地单元测试（17项，无需API key）
-├── run_eval.py              # CLI 入口
+├── assets/chart.umd.min.js  # 图表库（本地化，仪表盘离线可用）
+├── report/                  # 仪表盘产物（dashboard.html）
+├── tests/                   # 本地单元测试（19项，无需API key）
+├── run_eval.py              # 评测 CLI 入口
+├── make_dashboard.py        # 仪表盘 CLI 入口
+├── check_volcengine.py      # 方舟 Key/模型可用性核实脚本
+├── check_aliyun.py          # 百炼 Key/模型可用性核实脚本
 ├── .env.example             # API Key 环境变量模板
 └── requirements.txt
 ```
@@ -55,7 +61,30 @@ python run_eval.py --tag v1
 
 # 7. 生成/更新 manifest
 python run_eval.py --manifest-only --tag v1
+
+# 8. 生成可视化仪表盘（自包含 HTML，双击浏览器打开，无需服务器/联网）
+python make_dashboard.py                    # 汇总全部结果 → report/dashboard.html
+python make_dashboard.py --tag v1           # 只汇总指定 tag
 ```
+
+## 可视化窗口（最终产品形态）
+
+评测结果不只在终端看——`make_dashboard.py` 生成**自包含单文件 HTML 仪表盘**（数据与图表库全部内联，223KB，`file://` 直接打开）：
+
+- **汇总卡片**：记录数 / 模型数 / 题目数 / 总名义成本 / 平均综合分
+- **分难度综合质量分**（分组柱状图，全模型对比）
+- **成本-质量散点图**（性价比全景，越靠左上越优——路由决策的直接依据）
+- **单元测试通过率 / 平均耗时**（客观指标与时延维度）
+- **裁判一致性**（默认裁判 vs 交叉验证的评分差异）
+- **模型汇总表 / 分难度达标率热力表 / 明细记录**（含阶梯计价成本）
+- 浅色主题、中文界面；后续可经「发布为应用」转为在线链接分享
+
+## 密钥安全规范（重要）
+
+- API Key **只放 `.env`**（已被 `.gitignore` 拦截，且 Windows 权限已收紧为仅当前用户可读写）；代码与脚本一律从环境变量读取
+- git 全历史已扫描确认无 Key 泄露（`git log --all -p | grep` 双 Key 零命中）；提交前可用同样命令复查
+- **切勿**把 Key 写进代码、提交到 git、或粘贴到聊天/截图；项目结束后建议在两家控制台轮换
+- `.env.example` 仅为占位模板；DeepSeek 官方 Key 通道已预置（`DEEPSEEK_API_KEY`，提供后在 `config/models.yaml` 启用）
 
 ## 评测口径（全模型完全一致，见 config/eval.yaml）
 
