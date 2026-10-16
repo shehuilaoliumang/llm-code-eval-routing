@@ -23,12 +23,16 @@
 │   ├── dashboard.py         #   可视化仪表盘生成器
 │   └── config.py            #   配置加载
 ├── data/
-│   ├── tasks/tasks_v1.json  # 任务集（当前8题种子；完整48题阶段一构建）
+│   ├── tasks/tasks_v1.json  # 8题种子集（回归保护用）
+│   ├── tasks/tasks_v2.json  # 48题正式任务集（L1~L4 各12题，当前默认）
 │   └── results/             # 评测输出（JSONL，gitignore 拦截）
 ├── manifests/               # 版本 manifest
 ├── assets/chart.umd.min.js  # 图表库（本地化，仪表盘离线可用）
 ├── report/                  # 仪表盘产物（dashboard.html）
 ├── tests/                   # 本地单元测试（19项，无需API key）
+├── build_tasks.py           # 48题构建器（DeepSeek-V4-Pro 编辑 + 三道质量门）
+├── fill_tasks.py            # 补齐缺失题（人工编辑通道，共用同一套质量门）
+├── revise_tasks.py          # 质量审计后的修正（去重/去退化/消重名）
 ├── run_eval.py              # 评测 CLI 入口
 ├── make_dashboard.py        # 仪表盘 CLI 入口
 ├── check_volcengine.py      # 方舟 Key/模型可用性核实脚本
@@ -111,5 +115,6 @@ output_tokens / input_tier / cost_yuan / latency_seconds / code / test_details`�
 - [x] **第 1 笔试跑完成（67 次真实 API 调用，生成侧名义成本 0.15 元）**：全链路（调用→提取→沙箱→判分→裁判→记录）验证通过；裁判链路（v4.1-flash 全评 + v4-pro 抽验）正常
 - [x] **方舟旗舰确认可调用**（2026-10-17：此前 404 系点号/连字符 ID 转录错误，正确 ID 为 `doubao-seed-2-1-pro-260915`；候选模型升至 8 款）
 - [x] DeepSeek 官方通道启用（三裁判链路：v4.1-flash 全评 + 方舟 v4-pro + 官方 v4-pro 双交叉验证，冒烟通过）
-- [ ] 完整 48 题测试集（LLM 辅助构建中：DeepSeek-V4-Pro 编辑 + 三道质量门）
+- [x] **完整 48 题测试集定稿**：L1~L4 各 12 题，共 258 个测试用例；48/48 全部通过质量门
+      （schema 校验 + 参考实现须通过自有测试），入口名全局唯一，dev/holdout 各 24 题
 - [ ] 第 2 笔释放：全量评测（48题 × 8模型 × 3次，预计约 12 元）

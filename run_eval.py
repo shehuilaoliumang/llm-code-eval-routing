@@ -36,7 +36,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 
 def main():
     ap = argparse.ArgumentParser(description="LLM代码生成能力评测套件")
-    ap.add_argument("--tasks", default=os.path.join(ROOT, "data", "tasks", "tasks_v1.json"))
+    ap.add_argument("--tasks", default=os.path.join(ROOT, "data", "tasks", "tasks_v2.json"))
     ap.add_argument("--models", default=os.path.join(ROOT, "config", "models.yaml"))
     ap.add_argument("--eval-config", default=os.path.join(ROOT, "config", "eval.yaml"))
     ap.add_argument("--out", default=os.path.join(ROOT, "data", "results"))

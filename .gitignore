@@ -31,3 +31,6 @@ desktop.ini
 tmp/
 *.tmp
 *.log
+
+# 构建日志
+logs_*.txt

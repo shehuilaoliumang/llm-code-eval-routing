@@ -2,14 +2,50 @@
  "metadata": {
   "editor": "deepseek-v4-pro (DeepSeek official API)",
   "editor_thinking": "disabled",
-  "prompt_hash": "e70ba7153046602e",
-  "built_at": "2026-10-17T02:06:58+08:00",
+  "prompt_hash": "812e433c69b0d56e",
+  "built_at": "2026-10-17T02:29:37",
   "rules": [
    "仅标准库/确定性",
    "4~6测试用例",
    "参考实现须通过自有测试",
    "改编自常见知识点，严禁照搬公开基准原题",
-   "dev/holdout=每难度前6/后6"
+   "dev/holdout=每难度前6/后6",
+   "修复轮教训: 期望值手工推演/禁返回函数与tuple/优化题须规定平局规则"
+  ],
+  "manual_fill": {
+   "editor": "DeepSeek-V4-Pro（对话内直接出题）",
+   "task_ids": [
+    "L3-009",
+    "L3-010",
+    "L3-011",
+    "L3-012",
+    "L4-001",
+    "L4-002",
+    "L4-003",
+    "L4-004",
+    "L4-005",
+    "L4-006",
+    "L4-007",
+    "L4-008",
+    "L4-009",
+    "L4-010",
+    "L4-011",
+    "L4-012"
+   ],
+   "note": "补齐自动构建未过门的 L3/L4 题目；与自动构建共用同一套质量门（schema 校验 + 参考实现须通过自有测试）"
+  },
+  "revisions": [
+   {
+    "reason": "质量审计：替换退化/重复题，消除入口名冲突",
+    "task_ids": [
+     "L1-007",
+     "L1-009",
+     "L2-008",
+     "L3-002",
+     "L3-005",
+     "L3-008"
+    ]
+   }
   ]
  },
  "tasks": [
@@ -342,42 +378,72 @@
    "task_id": "L1-007",
    "difficulty": "L1",
    "task_type": "功能实现",
-   "description": "实现函数 format_phone_number(raw: str) -> str，将输入的中国大陆手机号字符串格式化为 \"xxx-xxxx-xxxx\" 形式。输入可能包含空格、短横线或括号，函数需要先移除非数字字符，然后校验是否为 11 位数字；若校验失败则返回空字符串。例如 \" 138-1234-5678 \" 应返回 \"138-1234-5678\"。",
-   "entry_point": "format_phone_number",
+   "description": "实现函数 clamp_scores(scores)，接收一个数值列表 scores（元素为 int 或 float），返回一个新列表：其中小于 0 的元素变为 0，大于 100 的元素变为 100，其余元素保持原值不变。\n若输入列表为空，返回空列表。\n要求：不得修改原列表，必须返回一个新列表。\n示例：clamp_scores([-5, 50, 105]) 返回 [0, 50, 100]。",
+   "entry_point": "clamp_scores",
    "test_cases": [
     {
      "args": [
-      " 138-1234-5678 "
+      [
+       -5,
+       50,
+       105
+      ]
      ],
-     "expected": "138-1234-5678"
+     "expected": [
+      0,
+      50,
+      100
+     ]
     },
     {
      "args": [
-      "(139) 8888 7777"
+      []
      ],
-     "expected": "139-8888-7777"
+     "expected": []
     },
     {
      "args": [
-      "12345"
+      [
+       -1,
+       -2,
+       -3
+      ]
      ],
-     "expected": ""
+     "expected": [
+      0,
+      0,
+      0
+     ]
     },
     {
      "args": [
-      "abcdefg"
+      [
+       101,
+       102
+      ]
      ],
-     "expected": ""
+     "expected": [
+      100,
+      100
+     ]
     },
     {
      "args": [
-      " 159 1234 5678 "
+      [
+       0,
+       50,
+       100
+      ]
      ],
-     "expected": "159-1234-5678"
+     "expected": [
+      0,
+      50,
+      100
+     ]
     }
    ],
-   "reference_solution": "def format_phone_number(raw: str) -> str:\n    digits = ''.join(ch for ch in raw if ch.isdigit())\n    if len(digits) != 11:\n        return \"\"\n    return f\"{digits[:3]}-{digits[3:7]}-{digits[7:]}\"\n",
-   "constraints": "",
+   "reference_solution": "def clamp_scores(scores):\n    result = []\n    for s in scores:\n        if s < 0:\n            result.append(0)\n        elif s > 100:\n            result.append(100)\n        else:\n            result.append(s)\n    return result\n",
+   "constraints": "不得修改传入的原列表；时间复杂度 O(n)。",
    "split": "holdout"
   },
   {
@@ -437,6 +503,180 @@
     }
    ],
    "reference_solution": "def sum_positive_even(numbers: list[int]) -> int:\n    total = 0\n    for n in numbers:\n        if n > 0 and n % 2 == 0:\n            total += n\n    return total\n",
+   "constraints": "",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L1-009",
+   "difficulty": "L1",
+   "task_type": "功能实现",
+   "description": "实现函数 format_us_phone(digits: str) -> str。输入是一个仅包含数字字符的字符串，长度固定为 10。要求将其格式化为形如 \"(123) 456-7890\" 的美国电话号码格式：前三位数字用小括号包裹，后跟一个空格，接着中间三位数字，再跟一个连字符，最后是四位数字。返回格式化后的字符串。\n示例：format_us_phone(\"1234567890\") 返回 \"(123) 456-7890\"。",
+   "entry_point": "format_us_phone",
+   "test_cases": [
+    {
+     "args": [
+      "1234567890"
+     ],
+     "expected": "(123) 456-7890"
+    },
+    {
+     "args": [
+      "0000000000"
+     ],
+     "expected": "(000) 000-0000"
+    },
+    {
+     "args": [
+      "9876543210"
+     ],
+     "expected": "(987) 654-3210"
+    },
+    {
+     "args": [
+      "1112223333"
+     ],
+     "expected": "(111) 222-3333"
+    }
+   ],
+   "reference_solution": "def format_us_phone(digits: str) -> str:\n    return f\"({digits[:3]}) {digits[3:6]}-{digits[6:]}\"\n",
+   "constraints": "输入长度固定为 10；只做格式化，不做合法性校验。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L1-010",
+   "difficulty": "L1",
+   "task_type": "算法",
+   "description": "实现函数 count_vowel_substrings(s: str) -> int。给定一个仅包含小写英文字母的字符串 s，统计其中所有长度至少为 2 的连续子串中，恰好只包含元音字母（'a','e','i','o','u'）的子串数量。例如 s=\"aeiou\" 时，所有长度至少为 2 的连续子串均只含元音，共有 10 个，因此返回 10。注意：子串必须完全由元音字母组成，不能包含任何辅音字母。",
+   "entry_point": "count_vowel_substrings",
+   "test_cases": [
+    {
+     "args": [
+      "aeiou"
+     ],
+     "expected": 10
+    },
+    {
+     "args": [
+      "abcde"
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      "aae"
+     ],
+     "expected": 3
+    },
+    {
+     "args": [
+      "xyzaei"
+     ],
+     "expected": 3
+    },
+    {
+     "args": [
+      "uoiea"
+     ],
+     "expected": 10
+    }
+   ],
+   "reference_solution": "def count_vowel_substrings(s: str) -> int:\n    vowels = set('aeiou')\n    count = 0\n    n = len(s)\n    for i in range(n):\n        if s[i] not in vowels:\n            continue\n        for j in range(i + 1, n):\n            if s[j] not in vowels:\n                break\n            count += 1\n    return count\n",
+   "constraints": "时间复杂度 O(n^2)，n 为字符串长度",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L1-011",
+   "difficulty": "L1",
+   "task_type": "功能实现",
+   "description": "实现函数 extract_initials(name: str) -> str。输入是一个完整的人名字符串，由空格分隔的若干单词组成，每个单词首字母大写，其余字母小写，且至少包含一个单词。要求提取每个单词的首字母，并将它们连接成一个全大写字符串返回。例如输入 \"John Fitzgerald Kennedy\" 返回 \"JFK\"。",
+   "entry_point": "extract_initials",
+   "test_cases": [
+    {
+     "args": [
+      "John Fitzgerald Kennedy"
+     ],
+     "expected": "JFK"
+    },
+    {
+     "args": [
+      "Ada Lovelace"
+     ],
+     "expected": "AL"
+    },
+    {
+     "args": [
+      "Madonna"
+     ],
+     "expected": "M"
+    },
+    {
+     "args": [
+      "Martin Luther King Jr"
+     ],
+     "expected": "MLKJ"
+    }
+   ],
+   "reference_solution": "def extract_initials(name: str) -> str:\n    return ''.join(word[0].upper() for word in name.split())\n",
+   "constraints": "",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L1-012",
+   "difficulty": "L1",
+   "task_type": "调试修复",
+   "description": "以下代码用于实现函数 running_sum(nums)，它应返回一个新列表，其中每个元素是原列表 nums 中从开头到当前位置的累加和。例如输入 [1,2,3,4] 应返回 [1,3,6,10]。但当前代码存在 bug，导致部分测试用例无法通过。请修复该函数，使其行为正确。\n\n```python\ndef running_sum(nums):\n    result = []\n    total = 0\n    for i in range(len(nums)):\n        total = nums[i]\n        result.append(total)\n    return result\n```",
+   "entry_point": "running_sum",
+   "test_cases": [
+    {
+     "args": [
+      [
+       1,
+       2,
+       3,
+       4
+      ]
+     ],
+     "expected": [
+      1,
+      3,
+      6,
+      10
+     ]
+    },
+    {
+     "args": [
+      [
+       5
+      ]
+     ],
+     "expected": [
+      5
+     ]
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": []
+    },
+    {
+     "args": [
+      [
+       -1,
+       1,
+       -1,
+       1
+      ]
+     ],
+     "expected": [
+      -1,
+      0,
+      -1,
+      0
+     ]
+    }
+   ],
+   "reference_solution": "def running_sum(nums):\n    result = []\n    total = 0\n    for num in nums:\n        total += num\n        result.append(total)\n    return result\n",
    "constraints": "",
    "split": "holdout"
   },
@@ -839,6 +1079,352 @@
    "split": "rule_dev"
   },
   {
+   "task_id": "L2-005",
+   "difficulty": "L2",
+   "task_type": "功能实现",
+   "description": "实现函数 normalize_phone_number(raw)，将输入字符串中的中国大陆手机号标准化为 11 位数字字符串。规则：\n1. 输入字符串可能包含空格、短横线 '-'、括号 '()' 等分隔符，需先去除所有非数字字符；\n2. 若去除分隔符后为 11 位数字且首位为 '1'，直接返回该 11 位数字字符串；\n3. 若去除分隔符后为 13 位数字且前两位为 '86'，去掉前缀 '86' 后返回剩余 11 位数字字符串；\n4. 若去除分隔符后为 12 位数字且前两位为 '86'，去掉前缀 '86' 后返回剩余 10 位数字字符串，并在前面补 '0' 使其成为 11 位；\n5. 其他情况返回空字符串 ''。\n输入 raw 为字符串，输出为字符串。",
+   "entry_point": "normalize_phone_number",
+   "test_cases": [
+    {
+     "args": [
+      "138-1234-5678"
+     ],
+     "expected": "13812345678"
+    },
+    {
+     "args": [
+      "+86 138 1234 5678"
+     ],
+     "expected": "13812345678"
+    },
+    {
+     "args": [
+      "8613812345678"
+     ],
+     "expected": "13812345678"
+    },
+    {
+     "args": [
+      "86 138 1234 567"
+     ],
+     "expected": "01381234567"
+    },
+    {
+     "args": [
+      "12345"
+     ],
+     "expected": ""
+    },
+    {
+     "args": [
+      "+86 (138) 1234-5678"
+     ],
+     "expected": "13812345678"
+    }
+   ],
+   "reference_solution": "def normalize_phone_number(raw):\n    digits = ''.join(ch for ch in raw if ch.isdigit())\n    if len(digits) == 11 and digits[0] == '1':\n        return digits\n    if len(digits) == 13 and digits.startswith('86'):\n        return digits[2:]\n    if len(digits) == 12 and digits.startswith('86'):\n        return '0' + digits[2:]\n    return ''\n",
+   "constraints": "禁止使用正则表达式；时间复杂度 O(n)，n 为输入字符串长度",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L2-006",
+   "difficulty": "L2",
+   "task_type": "算法",
+   "description": "实现函数 find_kth_largest(nums, k)，返回整数列表 nums 中第 k 大的元素（k 从 1 开始计数）。例如 nums=[3,1,4,1,5,9,2,6]，k=2 时第 2 大元素为 6。若 k 超出有效范围（k<1 或 k>len(nums)），返回 None。要求不修改输入列表。",
+   "entry_point": "find_kth_largest",
+   "test_cases": [
+    {
+     "args": [
+      [
+       3,
+       1,
+       4,
+       1,
+       5,
+       9,
+       2,
+       6
+      ],
+      2
+     ],
+     "expected": 6
+    },
+    {
+     "args": [
+      [
+       3,
+       1,
+       4,
+       1,
+       5,
+       9,
+       2,
+       6
+      ],
+      1
+     ],
+     "expected": 9
+    },
+    {
+     "args": [
+      [
+       1,
+       2,
+       3,
+       4,
+       5
+      ],
+      5
+     ],
+     "expected": 1
+    },
+    {
+     "args": [
+      [
+       5
+      ],
+      1
+     ],
+     "expected": 5
+    },
+    {
+     "args": [
+      [
+       1,
+       2,
+       3
+      ],
+      0
+     ],
+     "expected": null
+    },
+    {
+     "args": [
+      [
+       1,
+       2,
+       3
+      ],
+      4
+     ],
+     "expected": null
+    }
+   ],
+   "reference_solution": "def find_kth_largest(nums, k):\n    if k < 1 or k > len(nums):\n        return None\n    sorted_nums = sorted(nums, reverse=True)\n    return sorted_nums[k - 1]\n",
+   "constraints": "时间复杂度 O(n log n)，不得修改输入列表",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L2-007",
+   "difficulty": "L2",
+   "task_type": "业务逻辑",
+   "description": "实现类 ShoppingCart，模拟购物车功能。构造方法无参数。支持以下方法：\n- add_item(name, price, quantity=1)：添加商品，price 为整数（单位：分），quantity 为正整数。若商品已存在则累加数量；\n- remove_item(name, quantity=1)：移除指定数量商品，若数量减至 0 或以下则删除该商品；\n- get_total()：返回购物车总价（整数，单位：分）；\n- get_items()：返回商品列表，每个商品为字典 {\"name\": 名称, \"price\": 单价, \"quantity\": 数量}，按商品名称字典序升序排列；\n- clear()：清空购物车。\n所有金额均为整数分，无需处理小数。",
+   "entry_point": "ShoppingCart",
+   "test_cases": [
+    {
+     "class": "ShoppingCart",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_item",
+       "apple",
+       100,
+       2
+      ],
+      [
+       "add_item",
+       "banana",
+       50,
+       1
+      ],
+      [
+       "get_total"
+      ]
+     ],
+     "expected": 250
+    },
+    {
+     "class": "ShoppingCart",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_item",
+       "apple",
+       100,
+       2
+      ],
+      [
+       "add_item",
+       "apple",
+       100,
+       3
+      ],
+      [
+       "get_items"
+      ]
+     ],
+     "expected": [
+      {
+       "name": "apple",
+       "price": 100,
+       "quantity": 5
+      }
+     ]
+    },
+    {
+     "class": "ShoppingCart",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_item",
+       "apple",
+       100,
+       2
+      ],
+      [
+       "add_item",
+       "banana",
+       50,
+       3
+      ],
+      [
+       "remove_item",
+       "banana",
+       2
+      ],
+      [
+       "get_items"
+      ]
+     ],
+     "expected": [
+      {
+       "name": "apple",
+       "price": 100,
+       "quantity": 2
+      },
+      {
+       "name": "banana",
+       "price": 50,
+       "quantity": 1
+      }
+     ]
+    },
+    {
+     "class": "ShoppingCart",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_item",
+       "apple",
+       100,
+       1
+      ],
+      [
+       "remove_item",
+       "apple",
+       1
+      ],
+      [
+       "get_items"
+      ]
+     ],
+     "expected": []
+    },
+    {
+     "class": "ShoppingCart",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_item",
+       "apple",
+       100,
+       2
+      ],
+      [
+       "clear"
+      ],
+      [
+       "get_total"
+      ]
+     ],
+     "expected": 0
+    }
+   ],
+   "reference_solution": "class ShoppingCart:\n    def __init__(self):\n        self._items = {}\n\n    def add_item(self, name, price, quantity=1):\n        if name in self._items:\n            self._items[name]['quantity'] += quantity\n        else:\n            self._items[name] = {'name': name, 'price': price, 'quantity': quantity}\n\n    def remove_item(self, name, quantity=1):\n        if name in self._items:\n            self._items[name]['quantity'] -= quantity\n            if self._items[name]['quantity'] <= 0:\n                del self._items[name]\n\n    def get_total(self):\n        return sum(item['price'] * item['quantity'] for item in self._items.values())\n\n    def get_items(self):\n        return [self._items[name] for name in sorted(self._items.keys())]\n\n    def clear(self):\n        self._items.clear()\n",
+   "constraints": "所有金额为整数分，商品名称按字典序排序",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L2-008",
+   "difficulty": "L2",
+   "task_type": "调试修复",
+   "description": "下面这段代码的本意是：求整数列表 nums 中「最长连续严格递增段」的长度（连续指下标相邻，严格递增指后一个数严格大于前一个数）。\n但当前实现有 bug：无论输入什么，返回值永远是 1。\n\n```python\ndef longest_increasing_run(nums):\n    if len(nums) == 0:\n        return 0\n    best = 1\n    cur = 1\n    for i in range(1, len(nums)):\n        if nums[i] > nums[i - 1]:\n            cur = cur + 1\n        else:\n            cur = 1\n    return best\n```\n\n请定位并修复该 bug，提交完整函数实现。约定：\n- 输入为空列表时返回 0；\n- 只含一个元素时返回 1；\n- 相邻元素相等即视为递增中断；\n- 返回值为整数。",
+   "entry_point": "longest_increasing_run",
+   "test_cases": [
+    {
+     "args": [
+      [
+       1,
+       2,
+       3,
+       1,
+       2
+      ]
+     ],
+     "expected": 3
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       5
+      ]
+     ],
+     "expected": 1
+    },
+    {
+     "args": [
+      [
+       3,
+       2,
+       1
+      ]
+     ],
+     "expected": 1
+    },
+    {
+     "args": [
+      [
+       1,
+       2,
+       2,
+       3
+      ]
+     ],
+     "expected": 2
+    },
+    {
+     "args": [
+      [
+       1,
+       2,
+       3,
+       4
+      ]
+     ],
+     "expected": 4
+    }
+   ],
+   "reference_solution": "def longest_increasing_run(nums):\n    if len(nums) == 0:\n        return 0\n    best = 1\n    cur = 1\n    for i in range(1, len(nums)):\n        if nums[i] > nums[i - 1]:\n            cur += 1\n            if cur > best:\n                best = cur\n        else:\n            cur = 1\n    return best\n",
+   "constraints": "时间复杂度 O(n)；仅一次遍历。",
+   "split": "holdout"
+  },
+  {
    "task_id": "L2-009",
    "difficulty": "L2",
    "task_type": "功能实现",
@@ -1156,83 +1742,466 @@
    "split": "holdout"
   },
   {
-   "task_id": "L3-005",
+   "task_id": "L3-001",
+   "difficulty": "L3",
+   "task_type": "功能实现",
+   "description": "实现一个函数 parse_expression(expr: str) -> int，解析并计算一个仅包含非负整数、加法 '+'、乘法 '*' 和括号 '(' ')' 的数学表达式字符串。表达式保证合法，运算符和括号均为半角字符，数字可能有多位。请使用标准库中的 tokenize 或手写解析器实现，禁止使用 eval/exec。返回计算结果整数。",
+   "entry_point": "parse_expression",
+   "test_cases": [
+    {
+     "args": [
+      "1+2*3"
+     ],
+     "expected": 7
+    },
+    {
+     "args": [
+      "(1+2)*3"
+     ],
+     "expected": 9
+    },
+    {
+     "args": [
+      "2*(3+4)+5"
+     ],
+     "expected": 19
+    },
+    {
+     "args": [
+      "10+20*3"
+     ],
+     "expected": 70
+    },
+    {
+     "args": [
+      "((1+2)*(3+4))+5"
+     ],
+     "expected": 26
+    },
+    {
+     "args": [
+      "0"
+     ],
+     "expected": 0
+    }
+   ],
+   "reference_solution": "def parse_expression(expr: str) -> int:\n    def helper(index):\n        stack = []\n        num = 0\n        op = '+'\n        while index < len(expr):\n            ch = expr[index]\n            if ch.isdigit():\n                num = num * 10 + int(ch)\n            if ch == '(':\n                num, index = helper(index + 1)\n            if ch in '+-*/' or ch == ')' or index == len(expr) - 1:\n                if op == '+':\n                    stack.append(num)\n                elif op == '*':\n                    stack.append(stack.pop() * num)\n                op = ch\n                num = 0\n                if ch == ')':\n                    break\n            index += 1\n        return sum(stack), index\n    result, _ = helper(0)\n    return result\n",
+   "constraints": "禁止使用 eval/exec，表达式长度不超过 1000",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L3-002",
    "difficulty": "L3",
    "task_type": "算法",
-   "description": "实现函数 max_sum_after_k_swaps(nums, k)，给定一个由非负整数组成的列表 nums 和一个非负整数 k，你最多可以进行 k 次操作，每次操作选择两个不同下标 i 和 j，交换 nums[i] 与 nums[j] 的值。目标是使最终列表所有元素之和最大。注意：由于交换不改变元素总和，本题实际要求返回经过最多 k 次交换后列表元素之和（即原列表元素之和）。请实现该函数并返回整数结果。",
-   "entry_point": "max_sum_after_k_swaps",
+   "description": "实现函数 max_completable_tasks(tasks)。\n参数 tasks 是一个列表，元素形如 [duration, deadline]：表示某个任务需要连续投入 duration 天完成，且完成时间不得晚于第 deadline 天（时间从第 0 天开始计，duration 与 deadline 均为正整数）。\n同一时间只能做一个任务，任务一旦开始不可中断，可以选择任意子集与执行顺序。\n返回最多能够完成的任务数（整数）。\n要求使用贪心 + 最大堆：按 deadline 升序依次考虑任务，累加已选任务总耗时；一旦总耗时超过当前任务的 deadline，就从已选任务中移除 duration 最大的那个。\ntasks 可能为空列表，此时返回 0。\n示例：max_completable_tasks([[3,4],[2,6],[1,3],[4,7]]) 返回 3。",
+   "entry_point": "max_completable_tasks",
    "test_cases": [
     {
      "args": [
       [
-       1,
-       2,
-       3,
-       4
-      ],
-      2
+       [
+        3,
+        4
+       ],
+       [
+        2,
+        6
+       ],
+       [
+        1,
+        3
+       ],
+       [
+        4,
+        7
+       ]
+      ]
      ],
-     "expected": 10
+     "expected": 3
     },
     {
      "args": [
       [
-       5,
-       5,
-       5,
-       5
-      ],
-      3
+       [
+        5,
+        5
+       ],
+       [
+        5,
+        5
+       ]
+      ]
      ],
-     "expected": 20
+     "expected": 1
     },
     {
      "args": [
-      [
-       0,
-       0,
-       0
-      ],
-      1
+      []
      ],
      "expected": 0
     },
     {
      "args": [
       [
-       10,
-       20,
-       30
-      ],
-      0
+       [
+        1,
+        10
+       ]
+      ]
      ],
-     "expected": 60
+     "expected": 1
     },
     {
      "args": [
       [
-       7,
-       8,
-       9,
-       10,
-       11
-      ],
-      4
+       [
+        1,
+        2
+       ],
+       [
+        2,
+        3
+       ],
+       [
+        3,
+        4
+       ]
+      ]
      ],
-     "expected": 45
+     "expected": 2
     },
     {
      "args": [
       [
-       100
-      ],
-      5
+       [
+        3,
+        2
+       ],
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        4
+       ]
+      ]
      ],
-     "expected": 100
+     "expected": 2
     }
    ],
-   "reference_solution": "def max_sum_after_k_swaps(nums, k):\n    return sum(nums)\n",
-   "constraints": "时间复杂度 O(n)，其中 n 为 nums 长度；不得使用随机数或非确定性操作。",
+   "reference_solution": "import heapq\n\n\ndef max_completable_tasks(tasks):\n    heap = []\n    total = 0\n    for duration, deadline in sorted(tasks or [], key=lambda t: (t[1], t[0])):\n        total += duration\n        heapq.heappush(heap, -duration)\n        if total > deadline:\n            total += heapq.heappop(heap)\n    return len(heap)\n",
+   "constraints": "时间复杂度 O(n log n)；使用最大堆保存已选任务耗时。",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L3-003",
+   "difficulty": "L3",
+   "task_type": "功能实现",
+   "description": "实现一个类 TextProcessor，用于处理文本中的单词。构造函数接收一个字符串 text。类需要支持以下方法：\n- get_unique_words()：返回文本中所有不重复的单词列表，按字母顺序升序排列（忽略大小写，但返回原始大小写形式；若两个单词忽略大小写相同，则保留先出现的那个）。\n- get_word_frequency()：返回一个字典，键为单词（原始大小写形式），值为该单词在文本中出现的次数。\n- replace_word(old, new)：将文本中所有出现的 old 单词替换为 new 单词（区分大小写），并更新内部文本。\n- get_text()：返回当前内部文本。\n单词定义为由字母和数字组成的连续序列，标点符号和空白字符作为分隔符。",
+   "entry_point": "TextProcessor",
+   "test_cases": [
+    {
+     "class": "TextProcessor",
+     "ctor_args": [
+      "Hello world! hello there."
+     ],
+     "steps": [
+      [
+       "get_unique_words"
+      ],
+      [
+       "get_word_frequency"
+      ],
+      [
+       "replace_word",
+       "hello",
+       "hi"
+      ],
+      [
+       "get_text"
+      ]
+     ],
+     "expected": "Hello world! hi there."
+    },
+    {
+     "class": "TextProcessor",
+     "ctor_args": [
+      "One two, two three; three three."
+     ],
+     "steps": [
+      [
+       "get_unique_words"
+      ],
+      [
+       "get_word_frequency"
+      ]
+     ],
+     "expected": {
+      "One": 1,
+      "two": 2,
+      "three": 3
+     }
+    },
+    {
+     "class": "TextProcessor",
+     "ctor_args": [
+      ""
+     ],
+     "steps": [
+      [
+       "get_unique_words"
+      ],
+      [
+       "get_word_frequency"
+      ],
+      [
+       "get_text"
+      ]
+     ],
+     "expected": ""
+    },
+    {
+     "class": "TextProcessor",
+     "ctor_args": [
+      "Apple apple APPLE banana"
+     ],
+     "steps": [
+      [
+       "get_unique_words"
+      ],
+      [
+       "replace_word",
+       "apple",
+       "orange"
+      ],
+      [
+       "get_text"
+      ]
+     ],
+     "expected": "Apple orange APPLE banana"
+    }
+   ],
+   "reference_solution": "import re\n\nclass TextProcessor:\n    def __init__(self, text):\n        self.text = text\n\n    def _words(self):\n        return re.findall(r'[A-Za-z0-9]+', self.text)\n\n    def get_unique_words(self):\n        seen = {}\n        for w in self._words():\n            key = w.lower()\n            if key not in seen:\n                seen[key] = w\n        return [seen[k] for k in sorted(seen)]\n\n    def get_word_frequency(self):\n        freq = {}\n        for w in self._words():\n            freq[w] = freq.get(w, 0) + 1\n        return freq\n\n    def replace_word(self, old, new):\n        self.text = re.sub(r'\\b' + re.escape(old) + r'\\b', new, self.text)\n\n    def get_text(self):\n        return self.text\n",
+   "constraints": "不得使用 collections.Counter",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L3-004",
+   "difficulty": "L3",
+   "task_type": "调试修复",
+   "description": "以下代码实现了一个带虚拟头节点的双向链表类 DoublyLinkedList，支持在链表头部插入节点、在链表尾部插入节点、删除指定值的第一个节点、获取链表长度以及将链表转换为列表。\n\n```python\nclass ListNode:\n    def __init__(self, val=0, prev=None, next=None):\n        self.val = val\n        self.prev = prev\n        self.next = next\n\nclass DoublyLinkedList:\n    def __init__(self):\n        self.head = ListNode()\n        self.tail = ListNode()\n        self.head.next = self.tail\n        self.tail.prev = self.head\n        self.size = 0\n\n    def add_first(self, val):\n        node = ListNode(val)\n        node.prev = self.head\n        node.next = self.head.next\n        self.head.next.prev = node\n        self.head.next = node\n        self.size += 1\n\n    def add_last(self, val):\n        node = ListNode(val)\n        node.prev = self.tail.prev\n        node.next = self.tail\n        self.tail.prev.next = node\n        self.tail.prev = node\n        self.size += 1\n\n    def remove_first(self, val):\n        cur = self.head.next\n        while cur != self.tail:\n            if cur.val == val:\n                cur.prev.next = cur.next\n                cur.next.prev = cur.prev\n                self.size -= 1\n                return\n            cur = cur.next\n\n    def length(self):\n        return self.size\n\n    def to_list(self):\n        result = []\n        cur = self.head.next\n        while cur != self.tail:\n            result.append(cur.val)\n            cur = cur.next\n        return result\n```\n\n现象：在连续执行 add_first(1)、add_last(2)、add_first(3)、remove_first(1)、add_last(4) 后，to_list() 返回 [3, 2, 4]，length() 返回 3，结果正确。但在执行 remove_first(5)（删除不存在的值）后，length() 返回 3，to_list() 返回 [3, 2, 4]，结果也正确。然而，当执行 remove_first(2) 后，length() 返回 2，to_list() 返回 [3, 4]，结果正确。问题出现在执行 remove_first(3) 后，length() 返回 1，to_list() 返回 [4]，结果正确。但执行 remove_first(4) 后，length() 返回 0，to_list() 返回 []，结果正确。\n\n请修复代码中的 bug，确保所有操作均正确维护链表结构、size 计数以及虚拟头尾节点的连接关系。修复后，DoublyLinkedList 类应能正确处理任意顺序的插入和删除操作。",
+   "entry_point": "DoublyLinkedList",
+   "test_cases": [
+    {
+     "class": "DoublyLinkedList",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_first",
+       1
+      ],
+      [
+       "add_last",
+       2
+      ],
+      [
+       "add_first",
+       3
+      ],
+      [
+       "remove_first",
+       1
+      ],
+      [
+       "add_last",
+       4
+      ],
+      [
+       "to_list"
+      ]
+     ],
+     "expected": [
+      3,
+      2,
+      4
+     ]
+    },
+    {
+     "class": "DoublyLinkedList",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_first",
+       1
+      ],
+      [
+       "add_last",
+       2
+      ],
+      [
+       "add_first",
+       3
+      ],
+      [
+       "remove_first",
+       5
+      ],
+      [
+       "to_list"
+      ]
+     ],
+     "expected": [
+      3,
+      1,
+      2
+     ]
+    },
+    {
+     "class": "DoublyLinkedList",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_first",
+       1
+      ],
+      [
+       "add_last",
+       2
+      ],
+      [
+       "add_first",
+       3
+      ],
+      [
+       "remove_first",
+       2
+      ],
+      [
+       "to_list"
+      ]
+     ],
+     "expected": [
+      3,
+      1
+     ]
+    },
+    {
+     "class": "DoublyLinkedList",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_first",
+       1
+      ],
+      [
+       "add_last",
+       2
+      ],
+      [
+       "add_first",
+       3
+      ],
+      [
+       "remove_first",
+       3
+      ],
+      [
+       "to_list"
+      ]
+     ],
+     "expected": [
+      1,
+      2
+     ]
+    },
+    {
+     "class": "DoublyLinkedList",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_first",
+       1
+      ],
+      [
+       "add_last",
+       2
+      ],
+      [
+       "add_first",
+       3
+      ],
+      [
+       "remove_first",
+       4
+      ],
+      [
+       "to_list"
+      ]
+     ],
+     "expected": [
+      3,
+      1,
+      2
+     ]
+    }
+   ],
+   "reference_solution": "class ListNode:\n    def __init__(self, val=0, prev=None, next=None):\n        self.val = val\n        self.prev = prev\n        self.next = next\n\nclass DoublyLinkedList:\n    def __init__(self):\n        self.head = ListNode()\n        self.tail = ListNode()\n        self.head.next = self.tail\n        self.tail.prev = self.head\n        self.size = 0\n\n    def add_first(self, val):\n        node = ListNode(val)\n        node.prev = self.head\n        node.next = self.head.next\n        self.head.next.prev = node\n        self.head.next = node\n        self.size += 1\n\n    def add_last(self, val):\n        node = ListNode(val)\n        node.prev = self.tail.prev\n        node.next = self.tail\n        self.tail.prev.next = node\n        self.tail.prev = node\n        self.size += 1\n\n    def remove_first(self, val):\n        cur = self.head.next\n        while cur != self.tail:\n            if cur.val == val:\n                cur.prev.next = cur.next\n                cur.next.prev = cur.prev\n                self.size -= 1\n                return\n            cur = cur.next\n\n    def length(self):\n        return self.size\n\n    def to_list(self):\n        result = []\n        cur = self.head.next\n        while cur != self.tail:\n            result.append(cur.val)\n            cur = cur.next\n        return result\n",
+   "constraints": "",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L3-005",
+   "difficulty": "L3",
+   "task_type": "算法",
+   "description": "实现函数 spell_check_distance(a, b)，计算把字符串 a 转换成字符串 b 所需的最少单字符编辑次数（Levenshtein 距离）。\n允许的三种操作，每次计 1 次编辑：\n1. 在任意位置插入一个字符；\n2. 删除任意一个字符；\n3. 把任意一个字符替换成另一个字符。\n返回最少编辑次数（整数）。两字符串均为小写英文字母或空字符串。\n要求使用动态规划，时间复杂度 O(len(a) × len(b))，空间可优化为 O(min(len(a), len(b)))。\n示例：spell_check_distance(\"kitten\", \"sitting\") 返回 3；spell_check_distance(\"\", \"abc\") 返回 3。",
+   "entry_point": "spell_check_distance",
+   "test_cases": [
+    {
+     "args": [
+      "kitten",
+      "sitting"
+     ],
+     "expected": 3
+    },
+    {
+     "args": [
+      "",
+      "abc"
+     ],
+     "expected": 3
+    },
+    {
+     "args": [
+      "abc",
+      ""
+     ],
+     "expected": 3
+    },
+    {
+     "args": [
+      "same",
+      "same"
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      "flaw",
+      "lawn"
+     ],
+     "expected": 2
+    },
+    {
+     "args": [
+      "abc",
+      "abd"
+     ],
+     "expected": 1
+    }
+   ],
+   "reference_solution": "def spell_check_distance(a, b):\n    if len(a) < len(b):\n        a, b = b, a\n    prev = list(range(len(b) + 1))\n    for i in range(1, len(a) + 1):\n        cur = [i] + [0] * len(b)\n        for j in range(1, len(b) + 1):\n            cost = 0 if a[i - 1] == b[j - 1] else 1\n            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost)\n        prev = cur\n    return prev[len(b)]\n",
+   "constraints": "必须使用动态规划；禁止调用第三方编辑距离库。",
    "split": "rule_dev"
   },
   {
@@ -1554,8 +2523,8 @@
    "task_id": "L3-008",
    "difficulty": "L3",
    "task_type": "重构优化",
-   "description": "以下代码实现了一个简单的订单折扣计算器，但存在可读性差、重复代码多、扩展性差的问题。请重构代码，实现一个函数 calculate_order_total(items, customer_tier)，其中 items 是一个列表，每个元素为字典，包含 'name'（字符串）、'price'（数字）、'quantity'（整数）；customer_tier 是字符串，取值为 'regular'、'silver'、'gold'。折扣规则：regular 无折扣；silver 享受 5% 折扣；gold 享受 10% 折扣。此外，如果订单总价（折扣前）超过 1000，则额外享受 5% 折扣（在等级折扣基础上叠加）。函数返回折扣后的总价，保留两位小数。请重构代码，使其结构清晰、易于扩展新的客户等级，并保持功能完全一致。\n\n待重构代码：\ndef calculate_order_total(items, customer_tier):\n    total = 0\n    for item in items:\n        total += item['price'] * item['quantity']\n    if customer_tier == 'regular':\n        discount = 0\n    elif customer_tier == 'silver':\n        discount = 0.05\n    elif customer_tier == 'gold':\n        discount = 0.10\n    else:\n        discount = 0\n    total = total * (1 - discount)\n    if total > 1000:\n        total = total * 0.95\n    return round(total, 2)",
-   "entry_point": "calculate_order_total",
+   "description": "以下代码实现了一个简单的订单折扣计算器，但存在可读性差、重复代码多、扩展性差的问题。请重构代码，实现一个函数 apply_tier_discount(items, customer_tier)，其中 items 是一个列表，每个元素为字典，包含 'name'（字符串）、'price'（数字）、'quantity'（整数）；customer_tier 是字符串，取值为 'regular'、'silver'、'gold'。折扣规则：regular 无折扣；silver 享受 5% 折扣；gold 享受 10% 折扣。此外，如果订单总价（折扣前）超过 1000，则额外享受 5% 折扣（在等级折扣基础上叠加）。未知等级按 regular 处理。函数返回折扣后的总价，保留两位小数。请重构代码，使其结构清晰、易于扩展新的客户等级，并保持功能完全一致。\n\n待重构代码：\n```python\ndef apply_tier_discount(items, customer_tier):\n    total = 0\n    for item in items:\n        total += item['price'] * item['quantity']\n    if customer_tier == 'regular':\n        discount = 0\n    elif customer_tier == 'silver':\n        discount = 0.05\n    elif customer_tier == 'gold':\n        discount = 0.10\n    else:\n        discount = 0\n    total = total * (1 - discount)\n    if total > 1000:\n        total = total * 0.95\n    return round(total, 2)\n```",
+   "entry_point": "apply_tier_discount",
    "test_cases": [
     {
      "args": [
@@ -1636,13 +2605,1859 @@
         "quantity": 1
        }
       ],
-      "silver"
+      "bronze"
      ],
-     "expected": 23.75
+     "expected": 25.0
     }
    ],
-   "reference_solution": "def calculate_order_total(items, customer_tier):\n    tier_discounts = {\n        'regular': 0.0,\n        'silver': 0.05,\n        'gold': 0.10\n    }\n    subtotal = sum(item['price'] * item['quantity'] for item in items)\n    discount = tier_discounts.get(customer_tier, 0.0)\n    total = subtotal * (1 - discount)\n    if subtotal > 1000:\n        total *= 0.95\n    return round(total, 2)\n",
-   "constraints": "重构后代码应避免重复的条件判断，使用数据驱动方式管理折扣规则；保持函数签名不变。",
+   "reference_solution": "TIER_DISCOUNT = {\n    \"regular\": 0.0,\n    \"silver\": 0.05,\n    \"gold\": 0.10,\n}\nBULK_THRESHOLD = 1000\nBULK_DISCOUNT = 0.05\n\n\ndef _subtotal(items):\n    return sum(item[\"price\"] * item[\"quantity\"] for item in items or [])\n\n\ndef apply_tier_discount(items, customer_tier):\n    subtotal = _subtotal(items)\n    discount = TIER_DISCOUNT.get(customer_tier, TIER_DISCOUNT[\"regular\"])\n    total = subtotal * (1 - discount)\n    if subtotal > BULK_THRESHOLD:\n        total *= (1 - BULK_DISCOUNT)\n    return round(total, 2)\n",
+   "constraints": "折扣表必须写为模块级常量字典；未知等级按 regular 处理。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L3-009",
+   "difficulty": "L3",
+   "task_type": "算法",
+   "description": "实现函数 max_profit_schedule(jobs)，求解加权区间调度：给定若干工作，每项工作用 [start, end, profit] 表示，占用半开区间 [start, end)，即该工作从 start 开始、在 end 结束，另一项工作只要其 start >= 前一项的 end 就不冲突。\n要求：选出一组互不冲突的工作，使总收益最大，返回最大总收益（整数）。\n输入 jobs 是列表，元素为长度为 3 的列表 [start, end, profit]，start/end 为非负整数且 start < end，profit 为正整数；jobs 可能为空，此时返回 0。\n示例：jobs=[[1,3,20],[2,5,30],[4,7,25],[6,9,40]] 时，选择 [2,5,30] 与 [6,9,40] 收益最大，返回 70。",
+   "entry_point": "max_profit_schedule",
+   "test_cases": [
+    {
+     "args": [
+      [
+       [
+        1,
+        3,
+        20
+       ],
+       [
+        2,
+        5,
+        30
+       ],
+       [
+        4,
+        7,
+        25
+       ],
+       [
+        6,
+        9,
+        40
+       ]
+      ]
+     ],
+     "expected": 70
+    },
+    {
+     "args": [
+      [
+       [
+        1,
+        2,
+        50
+       ],
+       [
+        1,
+        2,
+        60
+       ],
+       [
+        1,
+        3,
+        10
+       ]
+      ]
+     ],
+     "expected": 60
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       [
+        1,
+        4,
+        10
+       ],
+       [
+        4,
+        7,
+        10
+       ],
+       [
+        7,
+        10,
+        10
+       ]
+      ]
+     ],
+     "expected": 30
+    },
+    {
+     "args": [
+      [
+       [
+        3,
+        10,
+        20
+       ],
+       [
+        1,
+        3,
+        15
+       ],
+       [
+        10,
+        12,
+        5
+       ]
+      ]
+     ],
+     "expected": 40
+    },
+    {
+     "args": [
+      [
+       [
+        5,
+        9,
+        100
+       ]
+      ]
+     ],
+     "expected": 100
+    }
+   ],
+   "reference_solution": "import bisect\n\n\ndef max_profit_schedule(jobs):\n    if not jobs:\n        return 0\n    ordered = sorted(jobs, key=lambda job: (job[1], job[0]))\n    ends = [job[1] for job in ordered]\n    dp = [0] * len(ordered)\n    for i, job in enumerate(ordered):\n        start, _end, profit = job[0], job[1], job[2]\n        k = min(bisect.bisect_right(ends, start), i)\n        best_prev = dp[k - 1] if k > 0 else 0\n        take = best_prev + profit\n        skip = dp[i - 1] if i > 0 else 0\n        dp[i] = max(take, skip)\n    return dp[-1]\n",
+   "constraints": "时间复杂度 O(n log n)，n 为工作数量；不得使用全局变量缓存。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L3-010",
+   "difficulty": "L3",
+   "task_type": "调试修复",
+   "description": "下面这段代码的本意是：统计单词出现频次，返回出现次数最高的 k 个单词；排序规则为「频次降序，频次相同时按单词字典序升序」。但当前实现有 bug：它用 set(words) 去重后仅按频次降序排序，没有处理频次相同的平局情况，而 set 的迭代顺序不稳定，导致频次相同时返回结果不确定。\n\n```python\ndef top_k_frequent_words(words, k):\n    counts = {}\n    for w in words:\n        counts[w] = counts.get(w, 0) + 1\n    unique = list(set(words))\n    unique.sort(key=lambda w: -counts[w])\n    return unique[:k]\n```\n\n请修复该函数并提交完整实现。要求：返回值为字符串列表，长度为 min(k, 不同单词数)；排序必须完全确定——先按频次降序，频次相同按单词字典序升序；输入 words 可能为空列表，此时返回空列表。",
+   "entry_point": "top_k_frequent_words",
+   "test_cases": [
+    {
+     "args": [
+      [
+       "apple",
+       "banana",
+       "apple",
+       "cherry",
+       "banana",
+       "apple"
+      ],
+      2
+     ],
+     "expected": [
+      "apple",
+      "banana"
+     ]
+    },
+    {
+     "args": [
+      [
+       "dog",
+       "cat",
+       "dog",
+       "bird",
+       "cat",
+       "dog"
+      ],
+      3
+     ],
+     "expected": [
+      "dog",
+      "cat",
+      "bird"
+     ]
+    },
+    {
+     "args": [
+      [
+       "z",
+       "a",
+       "z",
+       "a"
+      ],
+      2
+     ],
+     "expected": [
+      "a",
+      "z"
+     ]
+    },
+    {
+     "args": [
+      [
+       "x"
+      ],
+      1
+     ],
+     "expected": [
+      "x"
+     ]
+    },
+    {
+     "args": [
+      [
+       "m",
+       "m",
+       "n",
+       "o",
+       "o",
+       "o",
+       "p"
+      ],
+      2
+     ],
+     "expected": [
+      "o",
+      "m"
+     ]
+    },
+    {
+     "args": [
+      [],
+      3
+     ],
+     "expected": []
+    }
+   ],
+   "reference_solution": "def top_k_frequent_words(words, k):\n    counts = {}\n    for w in words or []:\n        counts[w] = counts.get(w, 0) + 1\n    unique = sorted(counts.keys(), key=lambda w: (-counts[w], w))\n    return unique[:k]\n",
+   "constraints": "结果必须完全确定；不得依赖 set 的迭代顺序。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L3-011",
+   "difficulty": "L3",
+   "task_type": "业务逻辑",
+   "description": "实现类 WarehouseInventory，模拟仓库库存的「预留—确认—释放」三段式流程。\n构造函数 __init__(self, initial=None)：initial 是 {sku: 数量} 字典（可能为 None），表示各 SKU 的初始可用库存。\n方法：\n- reserve(sku, qty)：预留。若 qty <= 0 或可用库存不足则返回 False；否则可用库存减去 qty、预留量加上 qty，返回 True。\n- confirm(sku, qty)：确认出库。若 qty <= 0 或预留量不足则返回 False；否则预留量减去 qty（不改动可用库存），返回 True。\n- release(sku, qty)：取消预留。若 qty <= 0 或预留量不足则返回 False；否则预留量减去 qty、可用库存加回 qty，返回 True。\n- available(sku)：返回该 SKU 可用库存（不存在返回 0）。\n- reserved(sku)：返回该 SKU 预留量（不存在返回 0）。\n- total(sku)：返回 available + reserved。\n所有数量均为整数，初始化时应拷贝传入的字典，不得与调用方共享同一对象。",
+   "entry_point": "WarehouseInventory",
+   "test_cases": [
+    {
+     "class": "WarehouseInventory",
+     "ctor_args": [
+      {
+       "A": 10
+      }
+     ],
+     "steps": [
+      [
+       "reserve",
+       "A",
+       4
+      ],
+      [
+       "available",
+       "A"
+      ]
+     ],
+     "expected": 6
+    },
+    {
+     "class": "WarehouseInventory",
+     "ctor_args": [
+      {
+       "A": 10,
+       "B": 3
+      }
+     ],
+     "steps": [
+      [
+       "reserve",
+       "A",
+       7
+      ],
+      [
+       "reserve",
+       "B",
+       5
+      ],
+      [
+       "reserved",
+       "A"
+      ],
+      [
+       "total",
+       "A"
+      ]
+     ],
+     "expected": 10
+    },
+    {
+     "class": "WarehouseInventory",
+     "ctor_args": [
+      {
+       "A": 10
+      }
+     ],
+     "steps": [
+      [
+       "reserve",
+       "A",
+       4
+      ],
+      [
+       "confirm",
+       "A",
+       3
+      ],
+      [
+       "available",
+       "A"
+      ],
+      [
+       "reserved",
+       "A"
+      ]
+     ],
+     "expected": 1
+    },
+    {
+     "class": "WarehouseInventory",
+     "ctor_args": [
+      {
+       "A": 10
+      }
+     ],
+     "steps": [
+      [
+       "reserve",
+       "A",
+       6
+      ],
+      [
+       "release",
+       "A",
+       2
+      ],
+      [
+       "available",
+       "A"
+      ]
+     ],
+     "expected": 6
+    },
+    {
+     "class": "WarehouseInventory",
+     "ctor_args": [
+      {}
+     ],
+     "steps": [
+      [
+       "available",
+       "Z"
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "class": "WarehouseInventory",
+     "ctor_args": [
+      {
+       "A": 2
+      }
+     ],
+     "steps": [
+      [
+       "reserve",
+       "A",
+       3
+      ],
+      [
+       "reserve",
+       "A",
+       2
+      ],
+      [
+       "available",
+       "A"
+      ]
+     ],
+     "expected": 0
+    }
+   ],
+   "reference_solution": "class WarehouseInventory:\n    def __init__(self, initial=None):\n        self._available = dict(initial or {})\n        self._reserved = {}\n\n    def reserve(self, sku, qty):\n        if qty <= 0 or self._available.get(sku, 0) < qty:\n            return False\n        self._available[sku] = self._available.get(sku, 0) - qty\n        self._reserved[sku] = self._reserved.get(sku, 0) + qty\n        return True\n\n    def confirm(self, sku, qty):\n        if qty <= 0 or self._reserved.get(sku, 0) < qty:\n            return False\n        self._reserved[sku] -= qty\n        return True\n\n    def release(self, sku, qty):\n        if qty <= 0 or self._reserved.get(sku, 0) < qty:\n            return False\n        self._reserved[sku] -= qty\n        self._available[sku] = self._available.get(sku, 0) + qty\n        return True\n\n    def available(self, sku):\n        return self._available.get(sku, 0)\n\n    def reserved(self, sku):\n        return self._reserved.get(sku, 0)\n\n    def total(self, sku):\n        return self._available.get(sku, 0) + self._reserved.get(sku, 0)\n",
+   "constraints": "数量均为 int；不得让内部状态与传入的 initial 字典产生别名共享。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L3-012",
+   "difficulty": "L3",
+   "task_type": "重构优化",
+   "description": "下面这段运费计算函数存在重复的分支嵌套、魔法数字散落、且未对重量向上取整导致金额偏小。请重构它，函数签名保持为 compute_shipping_fee(weight_kg, distance_km, is_express)，并严格实现下列规格：\n\n```python\ndef compute_shipping_fee(weight_kg, distance_km, is_express):\n    total = 8\n    if weight_kg > 1:\n        if weight_kg <= 5:\n            total = total + weight_kg * 2\n        else:\n            total = total + weight_kg * 3\n    if distance_km > 100:\n        if distance_km <= 500:\n            total = total + 6\n        else:\n            total = total + 15\n    if is_express == True:\n        total = total * 1.5\n    return total\n```\n\n规格：\n1. 基础费 8 元；\n2. 计费重量 = math.ceil(weight_kg)，即向上取整到整千克；\n3. 重量费：计费重量 <= 1 时为 0；2~5（含）时 = 计费重量 × 2；大于 5 时 = 计费重量 × 3；\n4. 距离费：distance_km <= 100 时为 0；101~500（含）时为 6；大于 500 时为 15；\n5. 若 is_express 为 True，最终金额 = (基础费 + 重量费 + 距离费) × 1.5；\n6. 返回 float，用 round(total, 2) 保留两位小数；\n7. 若 weight_kg 或 distance_km 为负数，抛出 ValueError。",
+   "entry_point": "compute_shipping_fee",
+   "test_cases": [
+    {
+     "args": [
+      0.5,
+      50,
+      false
+     ],
+     "expected": 8.0
+    },
+    {
+     "args": [
+      3.2,
+      200,
+      false
+     ],
+     "expected": 22.0
+    },
+    {
+     "args": [
+      7,
+      600,
+      true
+     ],
+     "expected": 66.0
+    },
+    {
+     "args": [
+      1,
+      100,
+      false
+     ],
+     "expected": 8.0
+    },
+    {
+     "args": [
+      5,
+      500,
+      false
+     ],
+     "expected": 24.0
+    },
+    {
+     "args": [
+      6.1,
+      501,
+      false
+     ],
+     "expected": 44.0
+    }
+   ],
+   "reference_solution": "import math\n\nBASE_FEE = 8.0\nLIGHT_MAX = 1           # 计费重量 <= 1 不收重量费\nMID_MAX = 5             # 计费重量 2~5 的费率区间\nMID_RATE = 2.0\nHEAVY_RATE = 3.0\nNEAR_MAX = 100          # 距离 <= 100 不收距离费\nMID_DISTANCE_MAX = 500\nMID_DISTANCE_FEE = 6.0\nFAR_DISTANCE_FEE = 15.0\nEXPRESS_FACTOR = 1.5\n\n\ndef compute_shipping_fee(weight_kg, distance_km, is_express):\n    if weight_kg < 0 or distance_km < 0:\n        raise ValueError(\"weight and distance must be non-negative\")\n    billable = math.ceil(weight_kg)\n    if billable <= LIGHT_MAX:\n        weight_fee = 0.0\n    elif billable <= MID_MAX:\n        weight_fee = billable * MID_RATE\n    else:\n        weight_fee = billable * HEAVY_RATE\n    if distance_km <= NEAR_MAX:\n        distance_fee = 0.0\n    elif distance_km <= MID_DISTANCE_MAX:\n        distance_fee = MID_DISTANCE_FEE\n    else:\n        distance_fee = FAR_DISTANCE_FEE\n    total = BASE_FEE + weight_fee + distance_fee\n    if is_express:\n        total *= EXPRESS_FACTOR\n    return round(total, 2)\n",
+   "constraints": "必须消除重复分支并保留完全一致的计费结果；返回 float 且保留两位小数。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L4-001",
+   "difficulty": "L4",
+   "task_type": "算法",
+   "description": "实现函数 network_throughput(n, pipes, source, sink)，计算有向网络的最大流。\n参数：n 为节点数（编号 0 ~ n-1）；pipes 为有向管道列表，元素形如 [u, v, capacity]，表示从 u 到 v 的管道最多可通过 capacity 单位流量（capacity 为非负整数，同一对节点可能出现多次，视为多条并行管道，容量叠加）；source 为源点编号，sink 为汇点编号。\n返回从 source 到 sink 的最大可输送总流量（整数）。若 source == sink 返回 0。\n要求使用 Dinic 算法（BFS 分层 + DFS 阻塞流增广），保证在 n <= 200、管道数 <= 2000 时快速完成。\n示例：n=4, pipes=[[0,1,3],[0,2,2],[1,2,1],[1,3,2],[2,3,4]], source=0, sink=3 时返回 5。",
+   "entry_point": "network_throughput",
+   "test_cases": [
+    {
+     "args": [
+      4,
+      [
+       [
+        0,
+        1,
+        3
+       ],
+       [
+        0,
+        2,
+        2
+       ],
+       [
+        1,
+        2,
+        1
+       ],
+       [
+        1,
+        3,
+        2
+       ],
+       [
+        2,
+        3,
+        4
+       ]
+      ],
+      0,
+      3
+     ],
+     "expected": 5
+    },
+    {
+     "args": [
+      2,
+      [
+       [
+        0,
+        1,
+        7
+       ]
+      ],
+      0,
+      1
+     ],
+     "expected": 7
+    },
+    {
+     "args": [
+      3,
+      [],
+      0,
+      2
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      6,
+      [
+       [
+        0,
+        1,
+        10
+       ],
+       [
+        0,
+        2,
+        10
+       ],
+       [
+        1,
+        3,
+        5
+       ],
+       [
+        1,
+        2,
+        2
+       ],
+       [
+        2,
+        4,
+        10
+       ],
+       [
+        3,
+        5,
+        10
+       ],
+       [
+        4,
+        5,
+        10
+       ],
+       [
+        3,
+        4,
+        5
+       ]
+      ],
+      0,
+      5
+     ],
+     "expected": 15
+    },
+    {
+     "args": [
+      4,
+      [
+       [
+        0,
+        1,
+        5
+       ],
+       [
+        1,
+        2,
+        5
+       ],
+       [
+        2,
+        3,
+        5
+       ],
+       [
+        0,
+        3,
+        1
+       ]
+      ],
+      0,
+      3
+     ],
+     "expected": 6
+    }
+   ],
+   "reference_solution": "from collections import deque\n\n\nclass _Edge:\n    __slots__ = (\"to\", \"cap\", \"rev\")\n\n    def __init__(self, to, cap, rev):\n        self.to = to\n        self.cap = cap\n        self.rev = rev\n\n\ndef network_throughput(n, pipes, source, sink):\n    if source == sink:\n        return 0\n    graph = [[] for _ in range(n)]\n    for u, v, cap in pipes or []:\n        graph[u].append(_Edge(v, cap, len(graph[v])))\n        graph[v].append(_Edge(u, 0, len(graph[u]) - 1))\n\n    flow = 0\n    while True:\n        level = [-1] * n\n        level[source] = 0\n        queue = deque([source])\n        while queue:\n            u = queue.popleft()\n            for edge in graph[u]:\n                if edge.cap > 0 and level[edge.to] < 0:\n                    level[edge.to] = level[u] + 1\n                    queue.append(edge.to)\n        if level[sink] < 0:\n            return flow\n        it = [0] * n\n\n        def dfs(u, pushed):\n            if u == sink:\n                return pushed\n            while it[u] < len(graph[u]):\n                edge = graph[u][it[u]]\n                if edge.cap > 0 and level[edge.to] == level[u] + 1:\n                    delta = dfs(edge.to, min(pushed, edge.cap))\n                    if delta > 0:\n                        edge.cap -= delta\n                        graph[edge.to][edge.rev].cap += delta\n                        return delta\n                it[u] += 1\n            return 0\n\n        while True:\n            pushed = dfs(source, float(\"inf\"))\n            if pushed == 0:\n                break\n            flow += pushed\n    return flow\n",
+   "constraints": "必须使用 Dinic（BFS 分层 + DFS 阻塞流）；不得使用第三方库。",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L4-002",
+   "difficulty": "L4",
+   "task_type": "功能实现",
+   "description": "实现函数 render_template(template: str, context: dict) -> str，实现一个最小模板引擎，支持变量与两种控制标签。\n\n语法与语义：\n1. 变量 {{ path }}：从 context 中按点号路径取值，如 {{ user.name }} 等价于 context['user']['name']；若路径中任一层不存在，替换为空字符串。\n2. 条件 {% if key %}...{% else %}...{% endif %}：key 为 context 中的键名，按 Python 真值判断；{% else %} 可省略。\n3. 循环 {% for item in items %}...{% endfor %}：items 为 context 中的列表键名，循环体内可将 item 作为变量名取值（如 {{ item }}）。循环体中若引用列表元素为字典，可用 {{ item.field }} 取值。\n4. 标签与变量之外的所有字符原样输出（包括空格与换行），引擎不做任何空白吞并；标签自身不产生输出。\n5. 取到的值统一用 str() 转为字符串后拼接。\n\n示例：render_template('Hello, {{ name }}!', {'name': 'Alice'}) 返回 'Hello, Alice!'。",
+   "entry_point": "render_template",
+   "test_cases": [
+    {
+     "args": [
+      "Hello, {{ name }}!",
+      {
+       "name": "Alice"
+      }
+     ],
+     "expected": "Hello, Alice!"
+    },
+    {
+     "args": [
+      "{% if flag %}yes{% else %}no{% endif %}",
+      {
+       "flag": true
+      }
+     ],
+     "expected": "yes"
+    },
+    {
+     "args": [
+      "{% if flag %}yes{% else %}no{% endif %}",
+      {
+       "flag": false
+      }
+     ],
+     "expected": "no"
+    },
+    {
+     "args": [
+      "{% for x in nums %}[{{ x }}]{% endfor %}",
+      {
+       "nums": [
+        1,
+        2,
+        3
+       ]
+      }
+     ],
+     "expected": "[1][2][3]"
+    },
+    {
+     "args": [
+      "{{ a.b.c }}",
+      {
+       "a": {
+        "b": {
+         "c": 42
+        }
+       }
+      }
+     ],
+     "expected": "42"
+    },
+    {
+     "args": [
+      "{{ missing }}|end",
+      {}
+     ],
+     "expected": "|end"
+    }
+   ],
+   "reference_solution": "import re\n\n_TOKEN = re.compile(r\"\\{\\{(.*?)\\}\\}|\\{%(.*?)%\\}\")\n\n\ndef _lookup(context, path):\n    cur = context\n    for part in str(path).strip().split(\".\"):\n        if isinstance(cur, dict) and part in cur:\n            cur = cur[part]\n        else:\n            return None\n    return cur\n\n\ndef _split_block(nodes, start, open_kw, close_kw, else_kw=\"else\"):\n    depth = 0\n    body, else_body = [], []\n    in_else = False\n    j = start + 1\n    while j < len(nodes):\n        kind, text = nodes[j]\n        if kind == \"tag\":\n            parts = text.strip().split()\n            kw = parts[0] if parts else \"\"\n            if kw in (open_kw, \"for\", \"if\"):\n                depth += 1\n            elif kw == close_kw:\n                if depth == 0:\n                    return body, (else_body if in_else else None), j + 1\n                depth -= 1\n            elif kw == else_kw and depth == 0:\n                in_else = True\n                j += 1\n                continue\n        (else_body if in_else else body).append(nodes[j])\n        j += 1\n    return body, None, j\n\n\ndef _render(nodes, context, out):\n    i = 0\n    while i < len(nodes):\n        kind, text = nodes[i]\n        if kind == \"text\":\n            out.append(text)\n            i += 1\n        elif kind == \"var\":\n            val = _lookup(context, text)\n            out.append(\"\" if val is None else str(val))\n            i += 1\n        else:\n            parts = text.strip().split()\n            kw = parts[0] if parts else \"\"\n            if kw == \"if\":\n                body, else_body, nxt = _split_block(nodes, i, \"if\", \"endif\")\n                if _lookup(context, parts[1]):\n                    _render(body, context, out)\n                elif else_body:\n                    _render(else_body, context, out)\n                i = nxt\n            elif kw == \"for\":\n                body, _else, nxt = _split_block(nodes, i, \"for\", \"endfor\")\n                for item in (_lookup(context, parts[3]) or []):\n                    local = dict(context)\n                    local[parts[1]] = item\n                    _render(body, local, out)\n                i = nxt\n            else:\n                i += 1\n    return out\n\n\ndef render_template(template, context):\n    nodes, pos = [], 0\n    for m in _TOKEN.finditer(template or \"\"):\n        if m.start() > pos:\n            nodes.append((\"text\", template[pos:m.start()]))\n        if m.group(1) is not None:\n            nodes.append((\"var\", m.group(1).strip()))\n        else:\n            nodes.append((\"tag\", m.group(2).strip()))\n        pos = m.end()\n    if pos < len(template or \"\"):\n        nodes.append((\"text\", template[pos:]))\n    return \"\".join(_render(nodes, context or {}, []))\n",
+   "constraints": "仅使用标准库；标签不做空白吞并；缺失路径替换为空字符串。",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L4-003",
+   "difficulty": "L4",
+   "task_type": "调试修复",
+   "description": "下面这段代码实现了一个 LRU（最近最少使用）缓存，但存在两处 bug：\n① get 命中后没有把该键移到末尾，导致「最近使用」记录不正确；\n② put 在容量已满时直接丢弃新键，而不是插入后淘汰最久未使用的键。\n\n```python\nfrom collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self._data = OrderedDict()\n\n    def get(self, key):\n        if key not in self._data:\n            return -1\n        return self._data[key]\n\n    def put(self, key, value):\n        if key in self._data:\n            self._data[key] = value\n            return\n        if len(self._data) < self.capacity:\n            self._data[key] = value\n```\n\n请修复后提交完整类实现。行为约定：\n- get(key)：存在则返回对应值并将该键标记为最近使用；不存在返回 -1。\n- put(key, value)：键已存在则更新值并标记为最近使用；否则插入新键，若插入后条目数超过 capacity，则删除最久未使用的键。\n- 构造函数 capacity <= 0 时抛出 ValueError。\n键可以是任意可哈希值，值为整数。",
+   "entry_point": "LRUCache",
+   "test_cases": [
+    {
+     "class": "LRUCache",
+     "ctor_args": [
+      2
+     ],
+     "steps": [
+      [
+       "put",
+       1,
+       10
+      ],
+      [
+       "put",
+       2,
+       20
+      ],
+      [
+       "get",
+       1
+      ]
+     ],
+     "expected": 10
+    },
+    {
+     "class": "LRUCache",
+     "ctor_args": [
+      2
+     ],
+     "steps": [
+      [
+       "put",
+       1,
+       10
+      ],
+      [
+       "put",
+       2,
+       20
+      ],
+      [
+       "put",
+       3,
+       30
+      ],
+      [
+       "get",
+       1
+      ]
+     ],
+     "expected": -1
+    },
+    {
+     "class": "LRUCache",
+     "ctor_args": [
+      2
+     ],
+     "steps": [
+      [
+       "put",
+       1,
+       10
+      ],
+      [
+       "put",
+       2,
+       20
+      ],
+      [
+       "get",
+       1
+      ],
+      [
+       "put",
+       3,
+       30
+      ],
+      [
+       "get",
+       2
+      ]
+     ],
+     "expected": -1
+    },
+    {
+     "class": "LRUCache",
+     "ctor_args": [
+      2
+     ],
+     "steps": [
+      [
+       "put",
+       1,
+       10
+      ],
+      [
+       "put",
+       2,
+       20
+      ],
+      [
+       "get",
+       1
+      ],
+      [
+       "put",
+       3,
+       30
+      ],
+      [
+       "get",
+       1
+      ]
+     ],
+     "expected": 10
+    },
+    {
+     "class": "LRUCache",
+     "ctor_args": [
+      1
+     ],
+     "steps": [
+      [
+       "put",
+       1,
+       10
+      ],
+      [
+       "put",
+       1,
+       99
+      ],
+      [
+       "get",
+       1
+      ]
+     ],
+     "expected": 99
+    },
+    {
+     "class": "LRUCache",
+     "ctor_args": [
+      3
+     ],
+     "steps": [
+      [
+       "put",
+       "a",
+       1
+      ],
+      [
+       "put",
+       "b",
+       2
+      ],
+      [
+       "put",
+       "c",
+       3
+      ],
+      [
+       "put",
+       "d",
+       4
+      ],
+      [
+       "get",
+       "a"
+      ]
+     ],
+     "expected": -1
+    }
+   ],
+   "reference_solution": "from collections import OrderedDict\n\n\nclass LRUCache:\n    def __init__(self, capacity):\n        if capacity <= 0:\n            raise ValueError(\"capacity must be positive\")\n        self.capacity = capacity\n        self._data = OrderedDict()\n\n    def get(self, key):\n        if key not in self._data:\n            return -1\n        self._data.move_to_end(key)\n        return self._data[key]\n\n    def put(self, key, value):\n        if key in self._data:\n            self._data[key] = value\n            self._data.move_to_end(key)\n            return\n        self._data[key] = value\n        if len(self._data) > self.capacity:\n            self._data.popitem(last=False)\n",
+   "constraints": "get/put 平均时间复杂度 O(1)；不得使用 functools.lru_cache 直接代劳。",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L4-004",
+   "difficulty": "L4",
+   "task_type": "算法",
+   "description": "实现函数 shortest_path_with_breaks(grid, max_breaks)。\ngrid 是二维 0/1 列表，0 表示可通行空地，1 表示墙壁；从左上角 (0,0) 出发走到右下角 (m-1, n-1)，每步只能上下左右移动一格。\n允许穿墙，但整个路径上最多只能穿过 max_breaks 面墙（max_breaks 为非负整数）。\n返回最短路径的步数（进入的每个格子都算一步，起点不计）；若无法到达则返回 -1。\ngrid 保证非空且每行长度相同。\n示例：grid=[[0,0,0],[1,1,0],[0,0,0]], max_breaks=1 时，路径 (0,0)→(0,1)→(0,2)→(1,2)→(2,2) 共 4 步，返回 4。",
+   "entry_point": "shortest_path_with_breaks",
+   "test_cases": [
+    {
+     "args": [
+      [
+       [
+        0,
+        0,
+        0
+       ],
+       [
+        1,
+        1,
+        0
+       ],
+       [
+        0,
+        0,
+        0
+       ]
+      ],
+      1
+     ],
+     "expected": 4
+    },
+    {
+     "args": [
+      [
+       [
+        0,
+        1
+       ],
+       [
+        1,
+        0
+       ]
+      ],
+      1
+     ],
+     "expected": 2
+    },
+    {
+     "args": [
+      [
+       [
+        0,
+        1
+       ],
+       [
+        1,
+        0
+       ]
+      ],
+      0
+     ],
+     "expected": -1
+    },
+    {
+     "args": [
+      [
+       [
+        0
+       ]
+      ],
+      0
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      0
+     ],
+     "expected": 2
+    }
+   ],
+   "reference_solution": "from collections import deque\n\n\ndef shortest_path_with_breaks(grid, max_breaks):\n    if not grid or not grid[0]:\n        return -1\n    rows, cols = len(grid), len(grid[0])\n    if max_breaks < 0:\n        return -1\n    best = {}\n    queue = deque()\n    best[(0, 0)] = 0\n    queue.append((0, 0, 0, 0))\n    while queue:\n        r, c, used, steps = queue.popleft()\n        if r == rows - 1 and c == cols - 1:\n            return steps\n        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):\n            nr, nc = r + dr, c + dc\n            if not (0 <= nr < rows and 0 <= nc < cols):\n                continue\n            nu = used + grid[nr][nc]\n            if nu > max_breaks:\n                continue\n            key = (nr, nc)\n            if key in best and best[key] <= nu:\n                continue\n            best[key] = nu\n            queue.append((nr, nc, nu, steps + 1))\n    return -1\n",
+   "constraints": "时间复杂度 O(rows × cols × max_breaks)；使用 BFS，不得使用递归回溯。",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L4-005",
+   "difficulty": "L4",
+   "task_type": "重构优化",
+   "description": "下面这个问卷统计函数由一堆重复的 if/elif 与散落的变量拼成，可读性与可扩展性都很差。请重构它，函数签名保持为 analyze_survey(responses)。\n\n```python\ndef analyze_survey(responses):\n    c1 = 0\n    c2 = 0\n    c3 = 0\n    c4 = 0\n    c5 = 0\n    missing = 0\n    total = 0\n    for r in responses:\n        if r == 1:\n            c1 = c1 + 1\n            total = total + 1\n        elif r == 2:\n            c2 = c2 + 1\n            total = total + 2\n        elif r == 3:\n            c3 = c3 + 1\n            total = total + 3\n        elif r == 4:\n            c4 = c4 + 1\n            total = total + 4\n        elif r == 5:\n            c5 = c5 + 1\n            total = total + 5\n        else:\n            missing = missing + 1\n    count = c1 + c2 + c3 + c4 + c5\n    if count > 0:\n        average = round(total / count, 2)\n    else:\n        average = 0.0\n    result = {}\n    result['count'] = count\n    result['average'] = average\n    result['missing'] = missing\n    result['distribution'] = {'1': c1, '2': c2, '3': c3, '4': c4, '5': c5}\n    return result\n```\n\n规格（重构后必须完全满足）：\n- 输入 responses 为列表，元素为 1~5 的整数或 None（None 表示缺答），也可能为 None 本身；\n- 返回 dict，含四个键：'count'（有效答卷数 int）、'average'（平均分 float，round(total/count, 2)，无有效答卷时为 0.0）、'distribution'（dict，键为字符串 '1'~'5'，值为对应分数出现次数 int，必须为全部 5 个键）、'missing'（缺答数 int）；\n- 不在 1~5 范围内的非 None 元素既不计入有效答卷，也不计入缺答。",
+   "entry_point": "analyze_survey",
+   "test_cases": [
+    {
+     "args": [
+      [
+       5,
+       4,
+       3,
+       null
+      ]
+     ],
+     "expected": {
+      "count": 3,
+      "average": 4.0,
+      "distribution": {
+       "1": 0,
+       "2": 0,
+       "3": 1,
+       "4": 1,
+       "5": 1
+      },
+      "missing": 1
+     }
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": {
+      "count": 0,
+      "average": 0.0,
+      "distribution": {
+       "1": 0,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "missing": 0
+     }
+    },
+    {
+     "args": [
+      [
+       null,
+       null
+      ]
+     ],
+     "expected": {
+      "count": 0,
+      "average": 0.0,
+      "distribution": {
+       "1": 0,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "missing": 2
+     }
+    },
+    {
+     "args": [
+      [
+       1,
+       1,
+       2
+      ]
+     ],
+     "expected": {
+      "count": 3,
+      "average": 1.33,
+      "distribution": {
+       "1": 2,
+       "2": 1,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "missing": 0
+     }
+    },
+    {
+     "args": [
+      [
+       3,
+       3,
+       3,
+       3
+      ]
+     ],
+     "expected": {
+      "count": 4,
+      "average": 3.0,
+      "distribution": {
+       "1": 0,
+       "2": 0,
+       "3": 4,
+       "4": 0,
+       "5": 0
+      },
+      "missing": 0
+     }
+    },
+    {
+     "args": [
+      [
+       5,
+       null,
+       5,
+       null,
+       5
+      ]
+     ],
+     "expected": {
+      "count": 3,
+      "average": 5.0,
+      "distribution": {
+       "1": 0,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 3
+      },
+      "missing": 2
+     }
+    }
+   ],
+   "reference_solution": "VALID_SCORES = (1, 2, 3, 4, 5)\n\n\ndef analyze_survey(responses):\n    distribution = {str(score): 0 for score in VALID_SCORES}\n    total = 0\n    count = 0\n    missing = 0\n    for value in responses or []:\n        if value is None:\n            missing += 1\n            continue\n        key = str(value)\n        if key not in distribution:\n            continue\n        distribution[key] += 1\n        total += value\n        count += 1\n    average = round(total / count, 2) if count else 0.0\n    return {\n        \"count\": count,\n        \"average\": average,\n        \"distribution\": distribution,\n        \"missing\": missing,\n    }\n",
+   "constraints": "必须消除重复的 if/elif 链；返回 dict 结构固定，distribution 必须包含 '1'~'5' 全部键。",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L4-006",
+   "difficulty": "L4",
+   "task_type": "功能实现",
+   "description": "实现类 TextBuffer，一个支持撤销/重做的简易文本缓冲区。\n构造函数 __init__(self, text=\"\")：初始文本为 text。\n方法：\n- insert(pos, s)：在下标 pos 处插入字符串 s，返回插入后的完整文本；pos 越界（pos < 0 或 pos > 当前长度）时抛出 IndexError。\n- delete(pos, length)：删除从下标 pos 开始的 length 个字符，返回被删除的字符串；范围越界时抛出 IndexError。\n- undo()：撤销最近一次 insert/delete，返回撤销后的完整文本；无历史可撤销时不做任何改动，直接返回当前文本。\n- redo()：恢复最近一次被撤销的操作，返回恢复后的完整文本；无可重做时直接返回当前文本。\n- get_text()：返回当前完整文本。\n额外约定：执行新的 insert 或 delete 后，redo 历史必须被清空。",
+   "entry_point": "TextBuffer",
+   "test_cases": [
+    {
+     "class": "TextBuffer",
+     "ctor_args": [
+      "hello"
+     ],
+     "steps": [
+      [
+       "insert",
+       5,
+       " world"
+      ],
+      [
+       "get_text"
+      ]
+     ],
+     "expected": "hello world"
+    },
+    {
+     "class": "TextBuffer",
+     "ctor_args": [
+      "hello"
+     ],
+     "steps": [
+      [
+       "delete",
+       1,
+       3
+      ],
+      [
+       "get_text"
+      ]
+     ],
+     "expected": "ho"
+    },
+    {
+     "class": "TextBuffer",
+     "ctor_args": [
+      "hello"
+     ],
+     "steps": [
+      [
+       "insert",
+       5,
+       " world"
+      ],
+      [
+       "undo"
+      ],
+      [
+       "get_text"
+      ]
+     ],
+     "expected": "hello"
+    },
+    {
+     "class": "TextBuffer",
+     "ctor_args": [
+      "hello"
+     ],
+     "steps": [
+      [
+       "insert",
+       5,
+       " world"
+      ],
+      [
+       "undo"
+      ],
+      [
+       "redo"
+      ],
+      [
+       "get_text"
+      ]
+     ],
+     "expected": "hello world"
+    },
+    {
+     "class": "TextBuffer",
+     "ctor_args": [
+      "hello"
+     ],
+     "steps": [
+      [
+       "insert",
+       5,
+       "!"
+      ],
+      [
+       "insert",
+       6,
+       "?"
+      ],
+      [
+       "undo"
+      ],
+      [
+       "undo"
+      ],
+      [
+       "get_text"
+      ]
+     ],
+     "expected": "hello"
+    },
+    {
+     "class": "TextBuffer",
+     "ctor_args": [
+      "abc"
+     ],
+     "steps": [
+      [
+       "undo"
+      ],
+      [
+       "get_text"
+      ]
+     ],
+     "expected": "abc"
+    }
+   ],
+   "reference_solution": "class TextBuffer:\n    def __init__(self, text=\"\"):\n        self._text = text\n        self._undo_stack = []\n        self._redo_stack = []\n\n    def insert(self, pos, s):\n        if pos < 0 or pos > len(self._text):\n            raise IndexError(\"insert position out of range\")\n        self._undo_stack.append(self._text)\n        self._redo_stack.clear()\n        self._text = self._text[:pos] + s + self._text[pos:]\n        return self._text\n\n    def delete(self, pos, length):\n        if pos < 0 or length < 0 or pos + length > len(self._text):\n            raise IndexError(\"delete range out of range\")\n        removed = self._text[pos:pos + length]\n        self._undo_stack.append(self._text)\n        self._redo_stack.clear()\n        self._text = self._text[:pos] + self._text[pos + length:]\n        return removed\n\n    def undo(self):\n        if not self._undo_stack:\n            return self._text\n        self._redo_stack.append(self._text)\n        self._text = self._undo_stack.pop()\n        return self._text\n\n    def redo(self):\n        if not self._redo_stack:\n            return self._text\n        self._undo_stack.append(self._text)\n        self._text = self._redo_stack.pop()\n        return self._text\n\n    def get_text(self):\n        return self._text\n",
+   "constraints": "undo/redo 语义须与常见编辑器一致；新增操作后清空 redo 栈。",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L4-007",
+   "difficulty": "L4",
+   "task_type": "算法",
+   "description": "实现函数 max_submatrix_sum(matrix)，求一个整数矩阵中「元素和最大的连续子矩阵」的和。\n连续子矩阵指行、列均连续的一块矩形区域，至少包含一个元素。\n输入 matrix 为二维整数列表（可能含负数），行等长；若 matrix 为空或首行为空则返回 0。\n返回该最大和（整数）。\n要求：时间复杂度 O(rows^2 × cols)（枚举上下边界 + 一维最大子段和），不得使用 O(rows^2 × cols^2) 的暴力枚举。\n示例：matrix=[[1,2,-1],[-3,4,5],[2,-1,3]] 时返回 12（取第 1~2 列、全部 3 行）。",
+   "entry_point": "max_submatrix_sum",
+   "test_cases": [
+    {
+     "args": [
+      [
+       [
+        1,
+        2,
+        -1
+       ],
+       [
+        -3,
+        4,
+        5
+       ],
+       [
+        2,
+        -1,
+        3
+       ]
+      ]
+     ],
+     "expected": 12
+    },
+    {
+     "args": [
+      [
+       [
+        -5
+       ]
+      ]
+     ],
+     "expected": -5
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       [
+        1,
+        2
+       ],
+       [
+        3,
+        4
+       ]
+      ]
+     ],
+     "expected": 10
+    },
+    {
+     "args": [
+      [
+       [
+        -1,
+        -2
+       ],
+       [
+        -3,
+        -4
+       ]
+      ]
+     ],
+     "expected": -1
+    },
+    {
+     "args": [
+      [
+       [
+        2,
+        -1,
+        2
+       ],
+       [
+        1,
+        -3,
+        4
+       ]
+      ]
+     ],
+     "expected": 6
+    }
+   ],
+   "reference_solution": "def max_submatrix_sum(matrix):\n    if not matrix or not matrix[0]:\n        return 0\n    rows, cols = len(matrix), len(matrix[0])\n    best = None\n    for top in range(rows):\n        col_sums = [0] * cols\n        for bottom in range(top, rows):\n            for c in range(cols):\n                col_sums[c] += matrix[bottom][c]\n            cur = col_sums[0]\n            local = col_sums[0]\n            for c in range(1, cols):\n                cur = max(col_sums[c], cur + col_sums[c])\n                local = max(local, cur)\n            if best is None or local > best:\n                best = local\n    return best\n",
+   "constraints": "时间复杂度 O(rows^2 × cols)；禁止暴力枚举所有子矩阵。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L4-008",
+   "difficulty": "L4",
+   "task_type": "业务逻辑",
+   "description": "实现类 Ledger，一个支持幂等记账的交易台账（金额单位统一为「分」的整数）。\n构造函数 __init__(self)：无参数，创建空台账。\n方法：\n- charge(txn_id, amount)：记账。若 txn_id 已存在则返回字符串 'DUPLICATE'；若 amount 不是 int 或 amount <= 0 则返回 'INVALID'；否则记录该笔交易并返回 'OK'。\n- refund(txn_id)：退款。若 txn_id 不存在返回 'NOT_FOUND'；若该交易已退款返回 'DUPLICATE'；否则标记为已退款并返回 'OK'。\n- balance()：返回所有「未退款」交易的金额之和（int）。\n- count()：返回「未退款」交易的笔数（int）。\n约定：同一 txn_id 重复 charge 时不得重复计入余额；退款后再 charge 同一 txn_id 仍返回 DUPLICATE。",
+   "entry_point": "Ledger",
+   "test_cases": [
+    {
+     "class": "Ledger",
+     "ctor_args": [],
+     "steps": [
+      [
+       "charge",
+       "t1",
+       1000
+      ],
+      [
+       "balance"
+      ]
+     ],
+     "expected": 1000
+    },
+    {
+     "class": "Ledger",
+     "ctor_args": [],
+     "steps": [
+      [
+       "charge",
+       "t1",
+       1000
+      ],
+      [
+       "charge",
+       "t1",
+       1000
+      ],
+      [
+       "balance"
+      ]
+     ],
+     "expected": 1000
+    },
+    {
+     "class": "Ledger",
+     "ctor_args": [],
+     "steps": [
+      [
+       "charge",
+       "t1",
+       1000
+      ],
+      [
+       "refund",
+       "t1"
+      ],
+      [
+       "balance"
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "class": "Ledger",
+     "ctor_args": [],
+     "steps": [
+      [
+       "refund",
+       "zz"
+      ],
+      [
+       "balance"
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "class": "Ledger",
+     "ctor_args": [],
+     "steps": [
+      [
+       "charge",
+       "t1",
+       1000
+      ],
+      [
+       "charge",
+       "t2",
+       500
+      ],
+      [
+       "refund",
+       "t1"
+      ],
+      [
+       "balance"
+      ]
+     ],
+     "expected": 500
+    },
+    {
+     "class": "Ledger",
+     "ctor_args": [],
+     "steps": [
+      [
+       "charge",
+       "t1",
+       0
+      ],
+      [
+       "count"
+      ]
+     ],
+     "expected": 0
+    }
+   ],
+   "reference_solution": "class Ledger:\n    def __init__(self):\n        self._txns = {}\n\n    def charge(self, txn_id, amount):\n        if txn_id in self._txns:\n            return \"DUPLICATE\"\n        if not isinstance(amount, int) or isinstance(amount, bool) or amount <= 0:\n            return \"INVALID\"\n        self._txns[txn_id] = {\"amount\": int(amount), \"refunded\": False}\n        return \"OK\"\n\n    def refund(self, txn_id):\n        txn = self._txns.get(txn_id)\n        if txn is None:\n            return \"NOT_FOUND\"\n        if txn[\"refunded\"]:\n            return \"DUPLICATE\"\n        txn[\"refunded\"] = True\n        return \"OK\"\n\n    def balance(self):\n        return sum(t[\"amount\"] for t in self._txns.values() if not t[\"refunded\"])\n\n    def count(self):\n        return sum(1 for t in self._txns.values() if not t[\"refunded\"])\n",
+   "constraints": "金额均为 int（分）；退款为幂等操作；balance/count 只统计未退款交易。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L4-009",
+   "difficulty": "L4",
+   "task_type": "重构优化",
+   "description": "下面这个订单状态机函数用层层 if/elif 硬编码状态转移，新增状态就要改动判断链，可维护性差。请重构为「状态转移表驱动」的实现，函数签名保持为 handle_order_event(state, event)。\n\n```python\ndef handle_order_event(state, event):\n    if state == 'PENDING':\n        if event == 'PAY':\n            return 'PAID'\n        elif event == 'CANCEL':\n            return 'CANCELLED'\n        else:\n            return 'INVALID'\n    elif state == 'PAID':\n        if event == 'SHIP':\n            return 'SHIPPED'\n        elif event == 'CANCEL':\n            return 'CANCELLED'\n        else:\n            return 'INVALID'\n    elif state == 'SHIPPED':\n        if event == 'DELIVER':\n            return 'DELIVERED'\n        else:\n            return 'INVALID'\n    else:\n        return 'INVALID'\n```\n\n转移规则（重构后须完全等价）：\nPENDING + PAY → PAID；PENDING + CANCEL → CANCELLED；\nPAID + SHIP → SHIPPED；PAID + CANCEL → CANCELLED；\nSHIPPED + DELIVER → DELIVERED；\n其余所有 (state, event) 组合（含 DELIVERED、CANCELLED 出发的任意事件）返回 'INVALID'。\n要求：把转移规则集中写成一个模块级 dict 常量，函数体只做查表。",
+   "entry_point": "handle_order_event",
+   "test_cases": [
+    {
+     "args": [
+      "PENDING",
+      "PAY"
+     ],
+     "expected": "PAID"
+    },
+    {
+     "args": [
+      "PENDING",
+      "CANCEL"
+     ],
+     "expected": "CANCELLED"
+    },
+    {
+     "args": [
+      "PAID",
+      "SHIP"
+     ],
+     "expected": "SHIPPED"
+    },
+    {
+     "args": [
+      "SHIPPED",
+      "DELIVER"
+     ],
+     "expected": "DELIVERED"
+    },
+    {
+     "args": [
+      "DELIVERED",
+      "CANCEL"
+     ],
+     "expected": "INVALID"
+    },
+    {
+     "args": [
+      "CANCELLED",
+      "PAY"
+     ],
+     "expected": "INVALID"
+    }
+   ],
+   "reference_solution": "INVALID = \"INVALID\"\n\nORDER_TRANSITIONS = {\n    (\"PENDING\", \"PAY\"): \"PAID\",\n    (\"PENDING\", \"CANCEL\"): \"CANCELLED\",\n    (\"PAID\", \"SHIP\"): \"SHIPPED\",\n    (\"PAID\", \"CANCEL\"): \"CANCELLED\",\n    (\"SHIPPED\", \"DELIVER\"): \"DELIVERED\",\n}\n\n\ndef handle_order_event(state, event):\n    return ORDER_TRANSITIONS.get((state, event), INVALID)\n",
+   "constraints": "转移规则必须以模块级常量字典表达；函数不得出现状态名的字符串比较。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L4-010",
+   "difficulty": "L4",
+   "task_type": "调试修复",
+   "description": "下面这段代码实现「项目构建顺序」求解（拓扑排序），但存在一个 bug：当依赖图中存在环时，它不会报告环，而是静默返回一个只含部分项目的列表，调用方无法区分「正常完成」与「存在循环依赖」。\n\n```python\ndef build_order(projects, deps):\n    graph = {}\n    indeg = {}\n    for p in projects:\n        graph[p] = []\n        indeg[p] = 0\n    for a, b in deps:\n        graph[b].append(a)\n        indeg[a] += 1\n    ready = []\n    for p in projects:\n        if indeg[p] == 0:\n            ready.append(p)\n    order = []\n    while len(ready) > 0:\n        ready.sort()\n        cur = ready.pop(0)\n        order.append(cur)\n        for nxt in graph[cur]:\n            indeg[nxt] -= 1\n            if indeg[nxt] == 0:\n                ready.append(nxt)\n    return order\n```\n\n请修复后提交完整实现。约定：\n- 参数 projects 为项目名字符串列表（无重复）；\n- 参数 deps 为 [a, b] 列表，表示 a 依赖 b，因此 b 必须排在 a 之前；deps 可能为 None；\n- 返回满足全部依赖的一个合法顺序（字符串列表）；当多个项目同时可执行时，取字典序最小者，以保证结果唯一；\n- 若存在循环依赖（无法排完所有项目），返回 [\"CYCLE\"]。",
+   "entry_point": "build_order",
+   "test_cases": [
+    {
+     "args": [
+      [
+       "a",
+       "b",
+       "c",
+       "d"
+      ],
+      [
+       [
+        "a",
+        "b"
+       ],
+       [
+        "b",
+        "c"
+       ],
+       [
+        "c",
+        "d"
+       ]
+      ]
+     ],
+     "expected": [
+      "d",
+      "c",
+      "b",
+      "a"
+     ]
+    },
+    {
+     "args": [
+      [
+       "x",
+       "y"
+      ],
+      [
+       [
+        "x",
+        "y"
+       ],
+       [
+        "y",
+        "x"
+       ]
+      ]
+     ],
+     "expected": [
+      "CYCLE"
+     ]
+    },
+    {
+     "args": [
+      [
+       "a",
+       "b",
+       "c"
+      ],
+      []
+     ],
+     "expected": [
+      "a",
+      "b",
+      "c"
+     ]
+    },
+    {
+     "args": [
+      [
+       "web",
+       "db",
+       "cache"
+      ],
+      [
+       [
+        "web",
+        "db"
+       ],
+       [
+        "cache",
+        "db"
+       ]
+      ]
+     ],
+     "expected": [
+      "db",
+      "cache",
+      "web"
+     ]
+    },
+    {
+     "args": [
+      [
+       "a"
+      ],
+      [
+       [
+        "a",
+        "a"
+       ]
+      ]
+     ],
+     "expected": [
+      "CYCLE"
+     ]
+    },
+    {
+     "args": [
+      [
+       "m",
+       "n",
+       "o"
+      ],
+      [
+       [
+        "m",
+        "n"
+       ]
+      ]
+     ],
+     "expected": [
+      "n",
+      "m",
+      "o"
+     ]
+    }
+   ],
+   "reference_solution": "import heapq\n\n\ndef build_order(projects, deps):\n    projects = list(projects or [])\n    graph = {p: [] for p in projects}\n    indeg = {p: 0 for p in projects}\n    for a, b in (deps or []):\n        if a not in graph or b not in graph:\n            continue\n        graph[b].append(a)\n        indeg[a] += 1\n    ready = [p for p in projects if indeg[p] == 0]\n    heapq.heapify(ready)\n    order = []\n    while ready:\n        cur = heapq.heappop(ready)\n        order.append(cur)\n        for nxt in graph[cur]:\n            indeg[nxt] -= 1\n            if indeg[nxt] == 0:\n                heapq.heappush(ready, nxt)\n    if len(order) != len(projects):\n        return [\"CYCLE\"]\n    return order\n",
+   "constraints": "结果必须唯一确定（同级按字典序最小）；存在环时必须返回 [\"CYCLE\"]。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L4-011",
+   "difficulty": "L4",
+   "task_type": "算法",
+   "description": "实现函数 min_wiring_cost(n, links)，求解「机房布线最小成本」：把 n 个机柜（编号 0 ~ n-1）全部连通所需的最小布线总成本。\n参数 links 为候选线路列表，元素形如 [u, v, w]，表示在机柜 u 与 v 之间布线的成本为 w（u、v 为有效机柜编号，w 为非负整数；线路为无向）。\n返回最小总成本（整数）；若无法使所有机柜连通则返回 -1。n <= 1 时返回 0。\n要求使用 Kruskal 算法（并查集 + 按权值升序排序），并在已选边数达到 n-1 时提前结束。\n示例：n=4, links=[[0,1,1],[1,2,2],[2,3,3],[0,3,4],[1,3,5]] 时返回 6。",
+   "entry_point": "min_wiring_cost",
+   "test_cases": [
+    {
+     "args": [
+      4,
+      [
+       [
+        0,
+        1,
+        1
+       ],
+       [
+        1,
+        2,
+        2
+       ],
+       [
+        2,
+        3,
+        3
+       ],
+       [
+        0,
+        3,
+        4
+       ],
+       [
+        1,
+        3,
+        5
+       ]
+      ]
+     ],
+     "expected": 6
+    },
+    {
+     "args": [
+      3,
+      [
+       [
+        0,
+        1,
+        5
+       ]
+      ]
+     ],
+     "expected": -1
+    },
+    {
+     "args": [
+      1,
+      []
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      4,
+      [
+       [
+        0,
+        1,
+        3
+       ],
+       [
+        0,
+        2,
+        1
+       ],
+       [
+        1,
+        2,
+        2
+       ],
+       [
+        2,
+        3,
+        4
+       ],
+       [
+        1,
+        3,
+        5
+       ]
+      ]
+     ],
+     "expected": 7
+    },
+    {
+     "args": [
+      5,
+      [
+       [
+        0,
+        1,
+        2
+       ],
+       [
+        1,
+        2,
+        3
+       ],
+       [
+        3,
+        4,
+        1
+       ],
+       [
+        2,
+        3,
+        4
+       ]
+      ]
+     ],
+     "expected": 10
+    }
+   ],
+   "reference_solution": "class _DSU:\n    def __init__(self, n):\n        self._parent = list(range(n))\n        self._rank = [0] * n\n\n    def find(self, x):\n        while self._parent[x] != x:\n            self._parent[x] = self._parent[self._parent[x]]\n            x = self._parent[x]\n        return x\n\n    def union(self, a, b):\n        ra, rb = self.find(a), self.find(b)\n        if ra == rb:\n            return False\n        if self._rank[ra] < self._rank[rb]:\n            ra, rb = rb, ra\n        self._parent[rb] = ra\n        if self._rank[ra] == self._rank[rb]:\n            self._rank[ra] += 1\n        return True\n\n\ndef min_wiring_cost(n, links):\n    if n <= 1:\n        return 0\n    dsu = _DSU(n)\n    total = 0\n    used = 0\n    for u, v, w in sorted(links or [], key=lambda e: (e[2], e[0], e[1])):\n        if dsu.union(u, v):\n            total += w\n            used += 1\n            if used == n - 1:\n                return total\n    return -1\n",
+   "constraints": "必须使用 Kruskal（按权值升序 + 并查集判环）；选满 n-1 条边后立即返回。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L4-012",
+   "difficulty": "L4",
+   "task_type": "重构优化",
+   "description": "下面这个通知下发函数把渠道选择逻辑硬编码成一串 if/elif，每新增渠道就要复制一遍分支。请重构它，函数签名保持为 dispatch_notification(profile, message)。\n\n```python\ndef dispatch_notification(profile, message):\n    if message == None or message == '':\n        ok = False\n    else:\n        ok = True\n    if profile.get('quiet_hours') == True:\n        ok = False\n    if profile.get('preferred') == 'email':\n        if profile.get('email') != None:\n            return {'channel': 'email', 'target': profile.get('email'), 'delivered': ok}\n        elif profile.get('phone') != None:\n            return {'channel': 'sms', 'target': profile.get('phone'), 'delivered': ok}\n        else:\n            return {'channel': 'push', 'target': '', 'delivered': ok}\n    elif profile.get('preferred') == 'sms':\n        if profile.get('phone') != None:\n            return {'channel': 'sms', 'target': profile.get('phone'), 'delivered': ok}\n        elif profile.get('email') != None:\n            return {'channel': 'email', 'target': profile.get('email'), 'delivered': ok}\n        else:\n            return {'channel': 'push', 'target': '', 'delivered': ok}\n    else:\n        return {'channel': 'push', 'target': '', 'delivered': ok}\n```\n\n规格（重构后须完全等价）：\n- profile 为 dict，可能包含键 'email'（str 或 None）、'phone'（str 或 None）、'preferred'（'email'/'sms'/'push' 之一）、'quiet_hours'（bool）；缺失的键按不存在处理；profile 也可能为 None；\n- 渠道选择：优先使用 preferred 指定的渠道；若该渠道缺少地址，则按固定顺序 email → sms → push 依次回退，取第一个有地址的渠道；push 渠道不需要地址，其 target 为空字符串 ''；\n- delivered：仅当 message 非 None 且非空字符串、且 quiet_hours 不为 True 时为 True，否则 False；\n- 返回 dict，固定包含三个键：'channel'、'target'、'delivered'。\n要求：把渠道回退顺序表达为模块级常量序列，函数体只做一次线性查找。",
+   "entry_point": "dispatch_notification",
+   "test_cases": [
+    {
+     "args": [
+      {
+       "email": "a@b.c",
+       "phone": "13800000000",
+       "preferred": "email",
+       "quiet_hours": false
+      },
+      "hi"
+     ],
+     "expected": {
+      "channel": "email",
+      "target": "a@b.c",
+      "delivered": true
+     }
+    },
+    {
+     "args": [
+      {
+       "email": null,
+       "phone": "13800000000",
+       "preferred": "email",
+       "quiet_hours": false
+      },
+      "hi"
+     ],
+     "expected": {
+      "channel": "sms",
+      "target": "13800000000",
+      "delivered": true
+     }
+    },
+    {
+     "args": [
+      {
+       "email": null,
+       "phone": null,
+       "preferred": "sms",
+       "quiet_hours": false
+      },
+      "hi"
+     ],
+     "expected": {
+      "channel": "push",
+      "target": "",
+      "delivered": true
+     }
+    },
+    {
+     "args": [
+      {
+       "email": "a@b.c",
+       "phone": null,
+       "preferred": "push",
+       "quiet_hours": false
+      },
+      "hi"
+     ],
+     "expected": {
+      "channel": "push",
+      "target": "",
+      "delivered": true
+     }
+    },
+    {
+     "args": [
+      {
+       "email": "a@b.c",
+       "phone": null,
+       "preferred": "email",
+       "quiet_hours": true
+      },
+      "hi"
+     ],
+     "expected": {
+      "channel": "email",
+      "target": "a@b.c",
+      "delivered": false
+     }
+    },
+    {
+     "args": [
+      {
+       "email": "a@b.c",
+       "phone": null,
+       "preferred": "email",
+       "quiet_hours": false
+      },
+      ""
+     ],
+     "expected": {
+      "channel": "email",
+      "target": "a@b.c",
+      "delivered": false
+     }
+    }
+   ],
+   "reference_solution": "CHANNEL_FALLBACK = (\"email\", \"sms\", \"push\")\nADDRESS_FIELD = {\"email\": \"email\", \"sms\": \"phone\"}\n\n\ndef dispatch_notification(profile, message):\n    profile = profile or {}\n    delivered = (message is not None and str(message) != \"\"\n                 and not profile.get(\"quiet_hours\", False))\n    preferred = profile.get(\"preferred\")\n    order = [preferred] if preferred in CHANNEL_FALLBACK else []\n    order += [c for c in CHANNEL_FALLBACK if c != preferred]\n    for channel in order:\n        if channel == \"push\":\n            return {\"channel\": \"push\", \"target\": \"\", \"delivered\": delivered}\n        address = profile.get(ADDRESS_FIELD[channel])\n        if address:\n            return {\"channel\": channel, \"target\": address, \"delivered\": delivered}\n    return {\"channel\": \"push\", \"target\": \"\", \"delivered\": delivered}\n",
+   "constraints": "渠道回退顺序必须写成模块级常量；不得保留原有的 if/elif 渠道分支链。",
    "split": "holdout"
   }
  ]
