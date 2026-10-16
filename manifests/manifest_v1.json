@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-10-16T16:19:54.066854+00:00",
+  "kit_version": "eval_kit 0.1.0",
+  "git_commit": "unknown",
+  "eval_config_sha256": "e852c0470a0191d1",
+  "models_config_sha256": "6bc3d70a0d340ef9",
+  "tasks_sha256": "88ae6182186fe7f9",
+  "system_prompt_sha256": "3de3b8f9deef201b",
+  "generation_params": {
+    "temperature": 0.2,
+    "top_p": 0.9,
+    "max_tokens": 4096,
+    "thinking": false,
+    "timeout_seconds": 30,
+    "runs_per_task": 3
+  },
+  "judge_params": {
+    "model": "deepseek-v4-flash",
+    "cross_check_model": "deepseek-v4-pro",
+    "cross_check_ratio": 0.1,
+    "temperature": 0,
+    "max_tokens": 1024,
+    "timeout_seconds": 30
+  },
+  "models": {
+    "doubao-seed-2.1-pro": {
+      "platform": "volcengine",
+      "snapshot": "doubao-seed-2.1-pro-0915",
+      "verified": true
+    },
+    "qwen3.8-max": {
+      "platform": "aliyun",
+      "snapshot": "qwen3.8-max-0902",
+      "verified": true
+    },
+    "doubao-seed-evolving": {
+      "platform": "volcengine",
+      "snapshot": "doubao-seed-evolving-0915",
+      "verified": false
+    },
+    "qwen3-coder-plus": {
+      "platform": "aliyun",
+      "snapshot": "qwen3-coder-plus-2025-09-23",
+      "verified": true
+    },
+    "doubao-seed-2.1-lite": {
+      "platform": "volcengine",
+      "snapshot": "doubao-seed-2.1-lite-latest",
+      "verified": false
+    },
+    "qwen3.7-plus": {
+      "platform": "aliyun",
+      "snapshot": "qwen3.7-plus-2026-05-26",
+      "verified": true
+    },
+    "doubao-seed-2.0-mini": {
+      "platform": "volcengine",
+      "snapshot": "doubao-seed-2.0-mini-latest",
+      "verified": true
+    },
+    "qwen3.7-flash": {
+      "platform": "aliyun",
+      "snapshot": "qwen3.7-flash-2026-07-15",
+      "verified": true
+    }
+  },
+  "price_snapshot_date": "2026-10-16"
+}

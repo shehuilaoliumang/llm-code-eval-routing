@@ -1,0 +1,32 @@
+# 评测执行配置（口径层）——全模型完全一致，改动需升版本号并重生成 manifest
+version: "1.0"
+
+generation:
+  temperature: 0.2
+  top_p: 0.9
+  max_tokens: 4096
+  thinking: false                # 关闭深度思考/思维链（全评测统一）
+  timeout_seconds: 30            # 单次生成超时记为失败
+  runs_per_task: 3               # 每题每模型重复次数
+
+judge:
+  model: deepseek-v4-flash       # 默认全量评判（成本控制默认启用）
+  cross_check_model: deepseek-v4-pro
+  cross_check_ratio: 0.10        # 10% 样本用主力裁判交叉验证
+  temperature: 0
+  max_tokens: 1024
+  timeout_seconds: 30
+
+scoring:
+  pass_line: {L1: 60, L2: 60, L3: 65, L4: 70}
+  weights: {syntax: 0.30, functional: 0.40, style: 0.20, robustness: 0.10}
+
+retry:
+  max_attempts: 5                # 单次调用最大尝试次数（指数退避）
+  backoff_base_seconds: 2
+  backoff_max_seconds: 60
+
+system_prompt: |
+  你是一名资深Python工程师。请根据题目要求编写完整、可独立运行的Python代码。
+  要求：遵循PEP8规范，命名清晰，包含必要注释，对输入参数做基本校验与异常处理。
+  只输出代码本身，不要任何额外解释。

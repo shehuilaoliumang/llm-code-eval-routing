@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "version": "0.1-seed",
+    "description": "种子任务集（8题，每级2题）——用于跑通评测管线；完整48题在阶段一按公开基准改编为主构建",
+    "schema": {
+      "task_id": "唯一标识 L{level}-{seq}",
+      "difficulty": "L1/L2/L3/L4",
+      "task_type": "功能实现/算法/调试修复/重构优化/业务逻辑",
+      "description": "题目描述（调试题可内嵌buggy代码）",
+      "entry_point": "默认入口函数名（类步骤用例可省略）",
+      "test_cases": "[{\"args\": [...]} 或 {\"class\": \"X\", \"ctor_args\": [...], \"steps\": [[\"m\", arg]]}]；步骤中 @模块.函数 引用可调用对象（如 @operator.add），@step:N / @last 表示作用于第N步/上一步的返回值",
+      "reference_solution": "参考实现",
+      "constraints": "额外约束"
+    },
+    "seed": true
+  },
+  "tasks": [
+    {
+      "task_id": "L1-001",
+      "difficulty": "L1",
+      "task_type": "功能实现",
+      "description": "实现函数 dedupe(nums)：去除列表中的重复元素，保留各元素首次出现的顺序，返回新列表。输入均为整数列表，可能为空。",
+      "entry_point": "dedupe",
+      "test_cases": [
+        {"args": [[1, 2, 2, 3, 1, 4]], "expected": [1, 2, 3, 4]},
+        {"args": [[]], "expected": []},
+        {"args": [[5, 5, 5]], "expected": [5]},
+        {"args": [[3, 1, 2, 1]], "expected": [3, 1, 2]}
+      ],
+      "reference_solution": "def dedupe(nums):\n    seen = set()\n    result = []\n    for n in nums:\n        if n not in seen:\n            seen.add(n)\n            result.append(n)\n    return result\n",
+      "constraints": "时间复杂度 O(n)；不要修改输入列表"
+    },
+    {
+      "task_id": "L1-002",
+      "difficulty": "L1",
+      "task_type": "功能实现",
+      "description": "实现函数 extract_emails(text)：从文本中提取所有电子邮箱地址，按出现顺序返回列表。邮箱格式：用户名@域名，用户名字符为字母/数字/点/下划线/连字符，域名至少包含一个点。",
+      "entry_point": "extract_emails",
+      "test_cases": [
+        {"args": ["联系 a@b.com 或 c.d@e-f.org"], "expected": ["a@b.com", "c.d@e-f.org"]},
+        {"args": ["没有邮箱"], "expected": []},
+        {"args": ["x_1@y.co, z@w.edu; q@r.net"], "expected": ["x_1@y.co", "z@w.edu", "q@r.net"]}
+      ],
+      "reference_solution": "import re\n\n\ndef extract_emails(text):\n    pattern = r\"[A-Za-z0-9._-]+@[A-Za-z0-9-]+\\.[A-Za-z0-9.-]+\"\n    return re.findall(pattern, text)\n",
+      "constraints": "使用正则表达式；保留原始大小写"
+    },
+    {
+      "task_id": "L2-001",
+      "difficulty": "L2",
+      "task_type": "功能实现",
+      "description": "实现单链表类 LinkedList，支持：append(value) 尾部追加、to_list() 按头到尾返回列表、__len__ 返回长度。空链表 to_list() 返回 []。",
+      "entry_point": "LinkedList",
+      "test_cases": [
+        {"class": "LinkedList", "steps": [["append", 1], ["append", 2], ["append", 3], ["to_list"]], "expected": [1, 2, 3]},
+        {"class": "LinkedList", "steps": [["to_list"]], "expected": []},
+        {"class": "LinkedList", "steps": [["append", 9], ["append", 9], ["to_list"]], "expected": [9, 9]},
+        {"class": "LinkedList", "steps": [["append", 1], ["append", 2], ["__len__"]], "expected": 2}
+      ],
+      "reference_solution": "class LinkedList:\n    class _Node:\n        __slots__ = (\"value\", \"next\")\n\n        def __init__(self, value):\n            self.value = value\n            self.next = None\n\n    def __init__(self):\n        self._head = None\n        self._tail = None\n        self._size = 0\n\n    def append(self, value):\n        node = self._Node(value)\n        if self._tail is None:\n            self._head = self._tail = node\n        else:\n            self._tail.next = node\n            self._tail = node\n        self._size += 1\n\n    def to_list(self):\n        result = []\n        current = self._head\n        while current is not None:\n            result.append(current.value)\n            current = current.next\n        return result\n\n    def __len__(self):\n        return self._size\n",
+      "constraints": "append 需 O(1)；不借助 Python list 存储全部元素再转换"
+    },
+    {
+      "task_id": "L2-002",
+      "difficulty": "L2",
+      "task_type": "算法",
+      "description": "实现函数 two_sum(nums, target)：在整数列表中找出和为目标值的两个不同下标，以 [i, j]（i < j）返回；保证有且仅有一个解。",
+      "entry_point": "two_sum",
+      "test_cases": [
+        {"args": [[2, 7, 11, 15], 9], "expected": [0, 1]},
+        {"args": [[3, 2, 4], 6], "expected": [1, 2]},
+        {"args": [[-1, -2, -3, -4], -7], "expected": [2, 3]},
+        {"args": [[1, 5, 5, 3], 10], "expected": [1, 2]}
+      ],
+      "reference_solution": "def two_sum(nums, target):\n    seen = {}\n    for j, n in enumerate(nums):\n        complement = target - n\n        if complement in seen:\n            i = seen[complement]\n            return [i, j] if i < j else [j, i]\n        seen[n] = j\n    raise ValueError(\"no solution\")\n",
+      "constraints": "时间复杂度 O(n)，不使用双重循环"
+    },
+    {
+      "task_id": "L3-001",
+      "difficulty": "L3",
+      "task_type": "算法",
+      "description": "实现函数 min_distance(word1, word2)：计算将 word1 转换成 word2 所需的最少操作数（插入、删除、替换各计1次），即编辑距离。",
+      "entry_point": "min_distance",
+      "test_cases": [
+        {"args": ["horse", "ros"], "expected": 3},
+        {"args": ["intention", "execution"], "expected": 5},
+        {"args": ["", "abc"], "expected": 3},
+        {"args": ["same", "same"], "expected": 0}
+      ],
+      "reference_solution": "def min_distance(word1, word2):\n    m, n = len(word1), len(word2)\n    prev = list(range(n + 1))\n    for i in range(1, m + 1):\n        curr = [i] + [0] * n\n        for j in range(1, n + 1):\n            cost = 0 if word1[i - 1] == word2[j - 1] else 1\n            curr[j] = min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost)\n        prev = curr\n    return prev[n]\n",
+      "constraints": "时间复杂度 O(m*n)，空间复杂度尽量优化到 O(n)"
+    },
+    {
+      "task_id": "L3-002",
+      "difficulty": "L3",
+      "task_type": "调试修复",
+      "description": "下面的冒泡排序实现有bug，在某些输入下结果错误。请修复 bubble_sort(nums) 使其正确升序排序并返回新列表（不修改输入）。\n\n```python\ndef bubble_sort(nums):\n    arr = list(nums)\n    n = len(arr)\n    for i in range(n):\n        for j in range(n - 1):\n            if arr[j] > arr[j + 1]:\n                arr[j], arr[j + 1] = arr[j + 1], arr[j]\n    return arr\n```",
+      "entry_point": "bubble_sort",
+      "test_cases": [
+        {"args": [[3, 1, 2]], "expected": [1, 2, 3]},
+        {"args": [[]], "expected": []},
+        {"args": [[5, 4, 3, 2, 1]], "expected": [1, 2, 3, 4, 5]},
+        {"args": [[1, 1, 1]], "expected": [1, 1, 1]},
+        {"args": [[2, 1]], "expected": [1, 2]}
+      ],
+      "reference_solution": "def bubble_sort(nums):\n    arr = list(nums)\n    n = len(arr)\n    for i in range(n):\n        swapped = False\n        for j in range(n - 1 - i):\n            if arr[j] > arr[j + 1]:\n                arr[j], arr[j + 1] = arr[j + 1], arr[j]\n                swapped = True\n        if not swapped:\n            break\n    return arr\n",
+      "constraints": "注意内层循环边界；允许加提前退出优化"
+    },
+    {
+      "task_id": "L4-001",
+      "difficulty": "L4",
+      "task_type": "功能实现",
+      "description": "实现一个简易线程池 ThreadPool(max_workers)：submit(fn, *args) 提交任务并返回 Future 对象；Future.result(timeout=None) 阻塞获取返回值，任务异常时 result() 抛出原异常；shutdown(wait=True) 等待所有已提交任务完成后关闭。需真正并发执行（并行执行多个耗时任务的总耗时显著小于串行）。",
+      "entry_point": "ThreadPool",
+      "test_cases": [
+        {"class": "ThreadPool", "ctor_args": [2], "steps": [["submit", "@operator.add", 1, 2], ["@step:0", "result"]], "expected": 3},
+        {"class": "ThreadPool", "ctor_args": [4], "steps": [["submit", "@operator.mul", 6, 7], ["@step:0", "result"]], "expected": 42},
+        {"class": "ThreadPool", "ctor_args": [2], "steps": [["submit", "@operator.add", 10, 20], ["shutdown"], ["@step:0", "result"]], "expected": 30}
+      ],
+      "reference_solution": "import queue\nimport threading\n\n\nclass Future:\n    def __init__(self):\n        self._event = threading.Event()\n        self._result = None\n        self._error = None\n\n    def set_result(self, value):\n        self._result = value\n        self._event.set()\n\n    def set_error(self, exc):\n        self._error = exc\n        self._event.set()\n\n    def result(self, timeout=None):\n        if not self._event.wait(timeout):\n            raise TimeoutError(\"future not ready\")\n        if self._error is not None:\n            raise self._error\n        return self._result\n\n\nclass ThreadPool:\n    def __init__(self, max_workers):\n        self._tasks = queue.Queue()\n        self._workers = [\n            threading.Thread(target=self._worker, daemon=True)\n            for _ in range(max_workers)\n        ]\n        for w in self._workers:\n            w.start()\n\n    def _worker(self):\n        while True:\n            fn, args, future = self._tasks.get()\n            try:\n                future.set_result(fn(*args))\n            except Exception as e:  # noqa: BLE001\n                future.set_error(e)\n            finally:\n                self._tasks.task_done()\n\n    def submit(self, fn, *args):\n        future = Future()\n        self._tasks.put((fn, args, future))\n        return future\n\n    def shutdown(self, wait=True):\n        if wait:\n            self._tasks.join()\n",
+      "constraints": "使用标准库 threading/queue；测试中以 @operator.add / @operator.mul 形式提交函数"
+    },
+    {
+      "task_id": "L4-002",
+      "difficulty": "L4",
+      "task_type": "功能实现",
+      "description": "实现带 TTL 的键值存储 TTLKVStore：set(key, value, ttl=None) 写入（ttl 秒后过期，None 永不过期）；get(key) 返回值，不存在或已过期返回 None；delete(key) 删除并返回是否命中；__len__ 返回当前未过期条目数（过期条目在访问时惰性清除）。",
+      "entry_point": "TTLKVStore",
+      "test_cases": [
+        {"class": "TTLKVStore", "steps": [["set", "a", 1], ["get", "a"]], "expected": 1},
+        {"class": "TTLKVStore", "steps": [["get", "missing"]], "expected": null},
+        {"class": "TTLKVStore", "steps": [["set", "a", 1], ["set", "b", 2], ["__len__"]], "expected": 2},
+        {"class": "TTLKVStore", "steps": [["set", "a", 1], ["delete", "a"], ["get", "a"]], "expected": null},
+        {"class": "TTLKVStore", "steps": [["set", "a", 1], ["delete", "a"], ["__len__"]], "expected": 0},
+        {"class": "TTLKVStore", "steps": [["set", "a", 1, 0.2], ["get", "a"]], "expected": 1}
+      ],
+      "reference_solution": "import time\n\n\nclass TTLKVStore:\n    def __init__(self):\n        self._data = {}\n\n    def set(self, key, value, ttl=None):\n        expire_at = None if ttl is None else time.monotonic() + ttl\n        self._data[key] = (value, expire_at)\n\n    def get(self, key):\n        if key not in self._data:\n            return None\n        value, expire_at = self._data[key]\n        if expire_at is not None and time.monotonic() > expire_at:\n            del self._data[key]\n            return None\n        return value\n\n    def delete(self, key):\n        if key in self._data:\n            del self._data[key]\n            return True\n        return False\n\n    def __len__(self):\n        now = time.monotonic()\n        expired = [k for k, (_, exp) in self._data.items()\n                   if exp is not None and now > exp]\n        for k in expired:\n            del self._data[k]\n        return len(self._data)\n",
+      "constraints": "惰性过期即可，不要求后台线程；时间基准用 time.monotonic()"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+# ===== 密钥与本地环境（严禁提交）=====
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets.*
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# ===== 评测输出（可重新生成的产物；manifest 保留提交）=====
+data/results/*.jsonl
+!data/results/.gitkeep
+
+# ===== 系统 / IDE =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ===== 临时文件 =====
+tmp/
+*.tmp
+*.log
