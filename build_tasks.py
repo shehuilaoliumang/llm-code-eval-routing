@@ -77,7 +77,20 @@ SYSTEM_PROMPT = """你是一名资深 Python 测评题目设计师，为一个 L
 7. description 用简体中文，表述无歧义，包含输入输出格式说明
 
 难度定级标准：
-""" + DIFFICULTY_RUBRIC
+""" + DIFFICULTY_RUBRIC + LESSONS
+
+LESSONS = """
+
+历次构建中实测发现的失败模式（必须全部避免）：
+1. **期望值计算错误**（最常见）：出题后必须逐用例手工推演期望值；测试数据要小到可以心算验证；
+   优化类问题（背包/调度等）若存在多个最优解，必须在题目描述中规定确定性的解规则
+   （如"存在多个最优选择集时返回字典序最小者"），否则测试无对错标准
+2. 禁止返回函数/闭包/生成器等可调用对象——所有返回值必须是 JSON 可序列化的基本类型
+3. 禁止返回 tuple——一律用 list；浮点结果避免精度陷阱，必要时 round(x, 2) 并在描述中说明保留位数
+4. steps 中的 "@" 仅允许两种用法：引用模块级可调用（如 "@operator.add"）与 "@last" 链式调用；
+   不得用于类自身方法（类方法直接写方法名）
+5. 状态机/审批流类题目必须规定完整确定性的转移规则与初始状态；金额类用整数分或明确 round 规则
+6. 写完参考实现后，以第一个测试用例在脑中走一遍代码，确认输出与期望一致再交卷"""
 
 USER_TEMPLATE = """请设计 {count} 道难度为 {difficulty} 的 Python 代码生成测试题。
 
@@ -203,7 +216,47 @@ def generate_batch(client, difficulty: str, batch: list, attempt: int = 1,
     return tasks
 
 
-def build(prompt_hash_note: str = "", difficulties=("L1", "L2", "L3", "L4")):
+def run_batch_with_repair(client, difficulty: str, batch_spec: list) -> tuple:
+    """单题打捞：一批中通过的题立即收下，只重试失败的题（最多5轮）。"""
+    collected = {}
+    feedback_state = {"text": ""}
+    for round_no in range(1, 6):
+        pending = [(tid, tt) for tid, tt in batch_spec if tid not in collected]
+        if not pending:
+            break
+        fb = "只生成以下 %d 题（task_id 与题型必须完全一致）：\n%s\n" % (
+            len(pending), "\n".join(f"- {tid}（{tt}）" for tid, tt in pending))
+        if feedback_state["text"]:
+            fb += "上一轮的失败反馈（务必修正）：\n" + feedback_state["text"] + "\n"
+        try:
+            tasks = generate_batch(client, difficulty, pending,
+                                    attempt=round_no, feedback=fb)
+        except Exception as e:  # noqa: BLE001
+            print(f"  第{round_no}轮生成失败: {type(e).__name__}: {str(e)[:90]}")
+            continue
+        errs_all = []
+        n_pass = 0
+        for t in tasks:
+            tid = t.get("task_id")
+            t.setdefault("difficulty", difficulty)
+            errs = validate_task_schema(t) + validate_reference_passes(t)
+            if errs:
+                errs_all += [f"{tid}: {e}" for e in errs]
+            elif tid in {i for i, _ in batch_spec} and tid not in collected:
+                collected[tid] = t
+                n_pass += 1
+        if errs_all:
+            print(f"  第{round_no}轮: 新增通过 {n_pass}，剩 {len(batch_spec)-len(collected)} 题待修")
+            for e in errs_all[:3]:
+                print(f"    - {e[:130]}")
+            feedback_state["text"] = "\n".join(errs_all[:8])
+        else:
+            print(f"  第{round_no}轮: 全部通过")
+    return collected, [(tid, tt) for tid, tt in batch_spec if tid not in collected]
+
+
+def build(prompt_hash_note: str = "", difficulties=("L1", "L2", "L3", "L4"),
+          repair: bool = False):
     from openai import OpenAI
     load_dotenv(os.path.join(ROOT, ".env.local"))
     key = os.environ.get("DEEPSEEK_API_KEY")
@@ -213,49 +266,31 @@ def build(prompt_hash_note: str = "", difficulties=("L1", "L2", "L3", "L4")):
     client = OpenAI(api_key=key, base_url="https://api.deepseek.com")
 
     all_tasks = []
-    stats = {"batches": 0, "retries": 0, "cost_est": 0.0}
+    if repair and os.path.exists(OUT_PATH):
+        with open(OUT_PATH, encoding="utf-8") as f:
+            prev = json.load(f)
+        all_tasks = prev["tasks"]
+        print(f"修复模式：已有 {len(all_tasks)} 题，只补缺失题")
 
     for difficulty in difficulties:
         types = TYPE_PLAN[difficulty]
+        have = {t["task_id"] for t in all_tasks if t["difficulty"] == difficulty}
         for b in range(3):
             batch_spec = [(f"{difficulty}-{b*4+i+1:03d}", types[b * 4 + i])
                           for i in range(4)]
-            print(f"\n=== {difficulty} 批次 {b+1}/3: {[t for _, t in batch_spec]} ===")
-            feedback = ""
-            for attempt in range(1, 4):
-                try:
-                    tasks = generate_batch(client, difficulty, batch_spec,
-                                           attempt=attempt, feedback=feedback)
-                except Exception as e:  # noqa: BLE001
-                    print(f"  第{attempt}次生成失败: {type(e).__name__}: {str(e)[:100]}")
-                    feedback = "上次输出无法解析为合法 JSON 数组，请严格按格式输出。"
-                    stats["retries"] += 1
-                    continue
-                # 校验 + 补齐 task_id/difficulty
-                ok = True
-                for t in tasks:
-                    t.setdefault("difficulty", difficulty)
-                errs = []
-                for t in tasks:
-                    errs += [f"{t.get('task_id', '?')}: {e}"
-                             for e in validate_task_schema(t) + validate_reference_passes(t)]
-                if errs:
-                    ok = False
-                    print(f"  第{attempt}次校验未过（{len(errs)}项）:")
-                    for e in errs[:6]:
-                        print(f"    - {e}")
-                    feedback = ("上一批题目有以下问题，请修正后重新输出整批（保持 task_id 不变）：\n"
-                                + "\n".join(errs[:8]))
-                    stats["retries"] += 1
-                if ok:
-                    print(f"  ✅ 4题全部通过（schema + 参考实现实跑）")
-                    all_tasks.extend(tasks)
-                    stats["batches"] += 1
-                    break
+            todo = [spec for spec in batch_spec if spec[0] not in have]
+            if not todo:
+                continue
+            print(f"\n=== {difficulty} 批次 {b+1}/3: 待 {[t for _, t in todo]} ===")
+            collected, failed = run_batch_with_repair(client, difficulty, todo)
+            all_tasks.extend(collected.values())
+            have |= set(collected.keys())
+            if failed:
+                print(f"  ⚠️ {len(failed)} 题5轮后仍未过门: {[tid for tid, _ in failed]}")
             else:
-                print(f"  ❌ 批次 {difficulty}-{b+1} 三次尝试仍失败，跳过（需人工补题）")
+                print(f"  ✅ 批次完成")
 
-    # dev/holdout 划分：每难度前6题为规则构建集，后6题为留出验证集
+    all_tasks.sort(key=lambda t: (t["difficulty"], t["task_id"]))
     for t in all_tasks:
         idx = int(t["task_id"].split("-")[1])
         t["split"] = "rule_dev" if idx <= 6 else "holdout"
@@ -268,20 +303,20 @@ def build(prompt_hash_note: str = "", difficulties=("L1", "L2", "L3", "L4")):
         "built_at": datetime.now(timezone.utc).astimezone(
             timezone(timedelta(hours=8))).isoformat(timespec="seconds"),
         "rules": ["仅标准库/确定性", "4~6测试用例", "参考实现须通过自有测试",
-                  "改编自常见知识点，严禁照搬公开基准原题", "dev/holdout=每难度前6/后6"],
+                  "改编自常见知识点，严禁照搬公开基准原题",
+                  "dev/holdout=每难度前6/后6",
+                  "修复轮教训: 期望值手工推演/禁返回函数与tuple/优化题须规定平局规则"],
     }
     payload = {"metadata": provenance, "tasks": all_tasks}
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=1)
-    print(f"\n========== 构建完成 ==========")
-    print(f"产出: {OUT_PATH}")
-    print(f"题目: {len(all_tasks)} 道 | 批次成功 {stats['batches']}/12 | 重试 {stats['retries']} 次")
     by_diff = {}
     for t in all_tasks:
         by_diff[t["difficulty"]] = by_diff.get(t["difficulty"], 0) + 1
-    print(f"分布: {by_diff}")
-    print(f"预计生成成本: 约 {0.02 + len(all_tasks) * 0.03:.1f} 元（官方v4-pro，关思考）")
+    print(f"\n========== 构建/修复完成 ==========")
+    print(f"产出: {OUT_PATH}")
+    print(f"题目: {len(all_tasks)} 道 | 分布: {by_diff} | 缺口: {48 - len(all_tasks)}")
 
 
 def validate_only():
@@ -308,14 +343,15 @@ def validate_only():
 def main():
     ap = argparse.ArgumentParser(description="48题测试集构建器（DeepSeek-V4-Pro 编辑）")
     ap.add_argument("--validate-only", action="store_true")
+    ap.add_argument("--repair", action="store_true", help="修复模式：保留已通过的题，只补缺失题")
     ap.add_argument("--difficulty", default=None, help="只构建指定难度（调试用）")
     args = ap.parse_args()
     if args.validate_only:
         sys.exit(0 if validate_only() else 1)
     if args.difficulty:
-        build(difficulties=(args.difficulty,))
+        build(difficulties=(args.difficulty,), repair=args.repair)
     else:
-        build()
+        build(repair=args.repair)
 
 
 if __name__ == "__main__":

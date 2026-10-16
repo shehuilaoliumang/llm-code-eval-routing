@@ -1,0 +1,1649 @@
+{
+ "metadata": {
+  "editor": "deepseek-v4-pro (DeepSeek official API)",
+  "editor_thinking": "disabled",
+  "prompt_hash": "e70ba7153046602e",
+  "built_at": "2026-10-17T02:06:58+08:00",
+  "rules": [
+   "仅标准库/确定性",
+   "4~6测试用例",
+   "参考实现须通过自有测试",
+   "改编自常见知识点，严禁照搬公开基准原题",
+   "dev/holdout=每难度前6/后6"
+  ]
+ },
+ "tasks": [
+  {
+   "task_id": "L1-001",
+   "difficulty": "L1",
+   "task_type": "功能实现",
+   "description": "实现函数 format_phone_number(raw)，将输入字符串中的数字字符提取出来，按中国大陆手机号格式重新格式化：如果提取后正好 11 位，则返回形如 '138-1234-5678' 的字符串（前 3 位、中间 4 位、后 4 位用 '-' 分隔）；如果不是 11 位，返回空字符串 ''。输入 raw 是任意字符串。",
+   "entry_point": "format_phone_number",
+   "test_cases": [
+    {
+     "args": [
+      "我的电话是13812345678，欢迎联系"
+     ],
+     "expected": "138-1234-5678"
+    },
+    {
+     "args": [
+      "13812345678"
+     ],
+     "expected": "138-1234-5678"
+    },
+    {
+     "args": [
+      "12345"
+     ],
+     "expected": ""
+    },
+    {
+     "args": [
+      "电话：138-1234-5678"
+     ],
+     "expected": "138-1234-5678"
+    },
+    {
+     "args": [
+      ""
+     ],
+     "expected": ""
+    }
+   ],
+   "reference_solution": "def format_phone_number(raw):\n    digits = [ch for ch in raw if ch.isdigit()]\n    if len(digits) != 11:\n        return ''\n    return f\"{''.join(digits[:3])}-{''.join(digits[3:7])}-{''.join(digits[7:])}\"\n",
+   "constraints": "",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L1-002",
+   "difficulty": "L1",
+   "task_type": "算法",
+   "description": "实现函数 max_adjacent_sum(nums)，接收一个整数列表 nums，返回所有相邻两个元素之和的最大值。如果列表长度小于 2，返回 0。例如 nums=[1,2,3] 时，相邻和分别为 3 和 5，返回 5。",
+   "entry_point": "max_adjacent_sum",
+   "test_cases": [
+    {
+     "args": [
+      [
+       1,
+       2,
+       3
+      ]
+     ],
+     "expected": 5
+    },
+    {
+     "args": [
+      [
+       -1,
+       -2,
+       -3
+      ]
+     ],
+     "expected": -3
+    },
+    {
+     "args": [
+      [
+       5
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       4,
+       1,
+       9,
+       2
+      ]
+     ],
+     "expected": 11
+    },
+    {
+     "args": [
+      [
+       0,
+       0,
+       0
+      ]
+     ],
+     "expected": 0
+    }
+   ],
+   "reference_solution": "def max_adjacent_sum(nums):\n    if len(nums) < 2:\n        return 0\n    max_sum = nums[0] + nums[1]\n    for i in range(1, len(nums) - 1):\n        current = nums[i] + nums[i + 1]\n        if current > max_sum:\n            max_sum = current\n    return max_sum\n",
+   "constraints": "时间复杂度 O(n)",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L1-003",
+   "difficulty": "L1",
+   "task_type": "功能实现",
+   "description": "实现函数 count_word_frequency(text)，统计输入字符串 text 中每个单词出现的次数。单词定义为由英文字母和数字组成的连续序列，大小写不敏感（例如 'Hello' 和 'hello' 视为同一个单词）。返回一个字典，键为小写单词，值为出现次数。输入 text 中单词之间由空格、标点或其他非字母数字字符分隔。",
+   "entry_point": "count_word_frequency",
+   "test_cases": [
+    {
+     "args": [
+      "Hello world, hello Python"
+     ],
+     "expected": {
+      "hello": 2,
+      "world": 1,
+      "python": 1
+     }
+    },
+    {
+     "args": [
+      "one two three"
+     ],
+     "expected": {
+      "one": 1,
+      "two": 1,
+      "three": 1
+     }
+    },
+    {
+     "args": [
+      ""
+     ],
+     "expected": {}
+    },
+    {
+     "args": [
+      "Test123 test123 TEST123"
+     ],
+     "expected": {
+      "test123": 3
+     }
+    },
+    {
+     "args": [
+      "a,b.c!d"
+     ],
+     "expected": {
+      "a": 1,
+      "b": 1,
+      "c": 1,
+      "d": 1
+     }
+    }
+   ],
+   "reference_solution": "import re\n\ndef count_word_frequency(text):\n    words = re.findall(r'[A-Za-z0-9]+', text.lower())\n    freq = {}\n    for word in words:\n        freq[word] = freq.get(word, 0) + 1\n    return freq\n",
+   "constraints": "",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L1-004",
+   "difficulty": "L1",
+   "task_type": "调试修复",
+   "description": "以下代码本意是计算整数列表 nums 中所有偶数的平均值，如果列表中没有偶数则返回 0。但当前实现有 bug，请修复并提交完整函数 average_even(nums)。\n\n当前代码：\n```python\ndef average_even(nums):\n    total = 0\n    count = 0\n    for num in nums:\n        if num % 2 == 0:\n            total += num\n        count += 1\n    if count == 0:\n        return 0\n    return total / count\n```\n\n例如 average_even([1,2,3,4]) 应返回 3.0，但当前代码返回 2.5。请修复该函数。",
+   "entry_point": "average_even",
+   "test_cases": [
+    {
+     "args": [
+      [
+       1,
+       2,
+       3,
+       4
+      ]
+     ],
+     "expected": 3.0
+    },
+    {
+     "args": [
+      [
+       2,
+       4,
+       6
+      ]
+     ],
+     "expected": 4.0
+    },
+    {
+     "args": [
+      [
+       1,
+       3,
+       5
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       0,
+       1,
+       2
+      ]
+     ],
+     "expected": 1.0
+    }
+   ],
+   "reference_solution": "def average_even(nums):\n    total = 0\n    count = 0\n    for num in nums:\n        if num % 2 == 0:\n            total += num\n            count += 1\n    if count == 0:\n        return 0\n    return total / count\n",
+   "constraints": "",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L1-005",
+   "difficulty": "L1",
+   "task_type": "功能实现",
+   "description": "实现函数 normalize_name(full_name: str) -> str，将输入的人名格式化为“姓, 名首字母大写”的形式。输入字符串由空格分隔的若干单词组成，要求：去除首尾多余空格；将每个单词的首字母转为大写、其余字母转为小写；用英文逗号加一个空格连接最后一个单词（视为姓）和前面所有单词（视为名）。例如 \"  john   michael DOE \" 应返回 \"Doe, John Michael\"。",
+   "entry_point": "normalize_name",
+   "test_cases": [
+    {
+     "args": [
+      "  john   michael DOE "
+     ],
+     "expected": "Doe, John Michael"
+    },
+    {
+     "args": [
+      "MARY ann SMITH"
+     ],
+     "expected": "Smith, Mary Ann"
+    },
+    {
+     "args": [
+      "  alice  "
+     ],
+     "expected": "Alice"
+    },
+    {
+     "args": [
+      "bob   charlie   david   lee"
+     ],
+     "expected": "Lee, Bob Charlie David"
+    },
+    {
+     "args": [
+      "  "
+     ],
+     "expected": ""
+    }
+   ],
+   "reference_solution": "def normalize_name(full_name: str) -> str:\n    parts = full_name.strip().split()\n    if not parts:\n        return \"\"\n    normalized = [p.capitalize() for p in parts]\n    if len(normalized) == 1:\n        return normalized[0]\n    return normalized[-1] + \", \" + \" \".join(normalized[:-1])\n",
+   "constraints": "",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L1-006",
+   "difficulty": "L1",
+   "task_type": "算法",
+   "description": "实现函数 max_consecutive_ones(nums: list[int]) -> int，返回整数列表中最长连续 1 的个数。输入列表只包含 0 和 1。例如 [1,1,0,1,1,1] 应返回 3。",
+   "entry_point": "max_consecutive_ones",
+   "test_cases": [
+    {
+     "args": [
+      [
+       1,
+       1,
+       0,
+       1,
+       1,
+       1
+      ]
+     ],
+     "expected": 3
+    },
+    {
+     "args": [
+      [
+       0,
+       0,
+       0
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       1,
+       1,
+       1,
+       1
+      ]
+     ],
+     "expected": 4
+    },
+    {
+     "args": [
+      [
+       1,
+       0,
+       1,
+       0,
+       1
+      ]
+     ],
+     "expected": 1
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": 0
+    }
+   ],
+   "reference_solution": "def max_consecutive_ones(nums: list[int]) -> int:\n    max_count = 0\n    current = 0\n    for x in nums:\n        if x == 1:\n            current += 1\n            max_count = max(max_count, current)\n        else:\n            current = 0\n    return max_count\n",
+   "constraints": "时间复杂度 O(n)，空间复杂度 O(1)",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L1-007",
+   "difficulty": "L1",
+   "task_type": "功能实现",
+   "description": "实现函数 format_phone_number(raw: str) -> str，将输入的中国大陆手机号字符串格式化为 \"xxx-xxxx-xxxx\" 形式。输入可能包含空格、短横线或括号，函数需要先移除非数字字符，然后校验是否为 11 位数字；若校验失败则返回空字符串。例如 \" 138-1234-5678 \" 应返回 \"138-1234-5678\"。",
+   "entry_point": "format_phone_number",
+   "test_cases": [
+    {
+     "args": [
+      " 138-1234-5678 "
+     ],
+     "expected": "138-1234-5678"
+    },
+    {
+     "args": [
+      "(139) 8888 7777"
+     ],
+     "expected": "139-8888-7777"
+    },
+    {
+     "args": [
+      "12345"
+     ],
+     "expected": ""
+    },
+    {
+     "args": [
+      "abcdefg"
+     ],
+     "expected": ""
+    },
+    {
+     "args": [
+      " 159 1234 5678 "
+     ],
+     "expected": "159-1234-5678"
+    }
+   ],
+   "reference_solution": "def format_phone_number(raw: str) -> str:\n    digits = ''.join(ch for ch in raw if ch.isdigit())\n    if len(digits) != 11:\n        return \"\"\n    return f\"{digits[:3]}-{digits[3:7]}-{digits[7:]}\"\n",
+   "constraints": "",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L1-008",
+   "difficulty": "L1",
+   "task_type": "调试修复",
+   "description": "以下函数 sum_positive_even(numbers: list[int]) -> int 的目标是计算列表中所有正偶数的和，但当前实现有 bug。请修复该函数，使其满足要求。\n\n当前有 bug 的代码：\n```python\ndef sum_positive_even(numbers):\n    total = 0\n    for n in numbers:\n        if n > 0 and n % 2 == 0:\n            total += n\n        else:\n            return 0\n    return total\n```\n\n现象：例如输入 [2, 4, -1, 6] 本应返回 12，但实际返回 0。请给出修复后的完整函数代码。",
+   "entry_point": "sum_positive_even",
+   "test_cases": [
+    {
+     "args": [
+      [
+       2,
+       4,
+       -1,
+       6
+      ]
+     ],
+     "expected": 12
+    },
+    {
+     "args": [
+      [
+       1,
+       3,
+       5
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       -2,
+       -4,
+       -6
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       0,
+       2,
+       4,
+       6
+      ]
+     ],
+     "expected": 12
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": 0
+    }
+   ],
+   "reference_solution": "def sum_positive_even(numbers: list[int]) -> int:\n    total = 0\n    for n in numbers:\n        if n > 0 and n % 2 == 0:\n            total += n\n    return total\n",
+   "constraints": "",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L2-001",
+   "difficulty": "L2",
+   "task_type": "功能实现",
+   "description": "实现函数 rotate_playlist(playlist, k)，playlist 是字符串列表，表示歌曲名。函数返回一个新的列表，表示将播放列表循环右移 k 位后的结果。k 是非负整数。若 playlist 为空，直接返回空列表。例如 rotate_playlist(['A','B','C','D'], 1) 返回 ['D','A','B','C']。",
+   "entry_point": "rotate_playlist",
+   "test_cases": [
+    {
+     "args": [
+      [
+       "A",
+       "B",
+       "C",
+       "D"
+      ],
+      1
+     ],
+     "expected": [
+      "D",
+      "A",
+      "B",
+      "C"
+     ]
+    },
+    {
+     "args": [
+      [
+       "A",
+       "B",
+       "C",
+       "D"
+      ],
+      4
+     ],
+     "expected": [
+      "A",
+      "B",
+      "C",
+      "D"
+     ]
+    },
+    {
+     "args": [
+      [
+       "A",
+       "B",
+       "C",
+       "D"
+      ],
+      6
+     ],
+     "expected": [
+      "C",
+      "D",
+      "A",
+      "B"
+     ]
+    },
+    {
+     "args": [
+      [],
+      3
+     ],
+     "expected": []
+    },
+    {
+     "args": [
+      [
+       "Solo"
+      ],
+      0
+     ],
+     "expected": [
+      "Solo"
+     ]
+    },
+    {
+     "args": [
+      [
+       "A",
+       "B",
+       "C"
+      ],
+      2
+     ],
+     "expected": [
+      "B",
+      "C",
+      "A"
+     ]
+    }
+   ],
+   "reference_solution": "def rotate_playlist(playlist, k):\n    if not playlist:\n        return []\n    n = len(playlist)\n    k %= n\n    return playlist[-k:] + playlist[:-k] if k else playlist[:]\n",
+   "constraints": "时间复杂度 O(n)，空间复杂度 O(n)",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L2-002",
+   "difficulty": "L2",
+   "task_type": "算法",
+   "description": "实现函数 max_sum_subarray(nums)，nums 是整数列表。返回 nums 中连续子数组的最大和。若 nums 为空，返回 0。例如 max_sum_subarray([-2,1,-3,4,-1,2,1,-5,4]) 返回 6，对应子数组 [4,-1,2,1]。",
+   "entry_point": "max_sum_subarray",
+   "test_cases": [
+    {
+     "args": [
+      [
+       -2,
+       1,
+       -3,
+       4,
+       -1,
+       2,
+       1,
+       -5,
+       4
+      ]
+     ],
+     "expected": 6
+    },
+    {
+     "args": [
+      [
+       1,
+       2,
+       3,
+       4
+      ]
+     ],
+     "expected": 10
+    },
+    {
+     "args": [
+      [
+       -1,
+       -2,
+       -3
+      ]
+     ],
+     "expected": -1
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       5,
+       -1,
+       5
+      ]
+     ],
+     "expected": 9
+    },
+    {
+     "args": [
+      [
+       0,
+       -1,
+       0,
+       -1
+      ]
+     ],
+     "expected": 0
+    }
+   ],
+   "reference_solution": "def max_sum_subarray(nums):\n    if not nums:\n        return 0\n    best = nums[0]\n    cur = nums[0]\n    for x in nums[1:]:\n        cur = max(x, cur + x)\n        best = max(best, cur)\n    return best\n",
+   "constraints": "时间复杂度 O(n)，空间复杂度 O(1)",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L2-003",
+   "difficulty": "L2",
+   "task_type": "功能实现",
+   "description": "实现类 TemperatureTracker，用于记录每日温度。构造方法无参数。方法 add(day, temp) 记录某天的温度，day 为字符串日期（如 '2024-01-01'），temp 为整数或浮点数。方法 average() 返回所有已记录温度的平均值，若没有记录则返回 None。方法 highest() 返回最高温度，若没有记录则返回 None。方法 lowest() 返回最低温度，若没有记录则返回 None。方法 count() 返回已记录天数。",
+   "entry_point": "TemperatureTracker",
+   "test_cases": [
+    {
+     "class": "TemperatureTracker",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add",
+       "2024-01-01",
+       20
+      ],
+      [
+       "add",
+       "2024-01-02",
+       25
+      ],
+      [
+       "average"
+      ]
+     ],
+     "expected": 22.5
+    },
+    {
+     "class": "TemperatureTracker",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add",
+       "2024-01-01",
+       18.5
+      ],
+      [
+       "add",
+       "2024-01-02",
+       22.0
+      ],
+      [
+       "highest"
+      ]
+     ],
+     "expected": 22.0
+    },
+    {
+     "class": "TemperatureTracker",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add",
+       "2024-01-01",
+       15
+      ],
+      [
+       "add",
+       "2024-01-02",
+       10
+      ],
+      [
+       "lowest"
+      ]
+     ],
+     "expected": 10
+    },
+    {
+     "class": "TemperatureTracker",
+     "ctor_args": [],
+     "steps": [
+      [
+       "count"
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "class": "TemperatureTracker",
+     "ctor_args": [],
+     "steps": [
+      [
+       "average"
+      ]
+     ],
+     "expected": null
+    },
+    {
+     "class": "TemperatureTracker",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add",
+       "2024-01-01",
+       30
+      ],
+      [
+       "add",
+       "2024-01-02",
+       20
+      ],
+      [
+       "add",
+       "2024-01-03",
+       10
+      ],
+      [
+       "count"
+      ]
+     ],
+     "expected": 3
+    }
+   ],
+   "reference_solution": "class TemperatureTracker:\n    def __init__(self):\n        self._records = {}\n\n    def add(self, day, temp):\n        self._records[day] = temp\n\n    def average(self):\n        if not self._records:\n            return None\n        return sum(self._records.values()) / len(self._records)\n\n    def highest(self):\n        if not self._records:\n            return None\n        return max(self._records.values())\n\n    def lowest(self):\n        if not self._records:\n            return None\n        return min(self._records.values())\n\n    def count(self):\n        return len(self._records)\n",
+   "constraints": "",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L2-004",
+   "difficulty": "L2",
+   "task_type": "调试修复",
+   "description": "以下代码实现函数 merge_sorted_lists(a, b)，合并两个已升序排列的整数列表，返回一个新的升序列表。但当前代码存在 bug，导致某些输入结果错误或抛出异常。请修复该函数，保持函数名和参数不变。\n\n```python\ndef merge_sorted_lists(a, b):\n    i = j = 0\n    result = []\n    while i < len(a) and j < len(b):\n        if a[i] < b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n    result.extend(a[i:])\n    result.extend(b[j:])\n    return result\n```\n\n例如 merge_sorted_lists([1,3,5], [2,4]) 应返回 [1,2,3,4,5]。",
+   "entry_point": "merge_sorted_lists",
+   "test_cases": [
+    {
+     "args": [
+      [
+       1,
+       3,
+       5
+      ],
+      [
+       2,
+       4
+      ]
+     ],
+     "expected": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "args": [
+      [],
+      [
+       1,
+       2
+      ]
+     ],
+     "expected": [
+      1,
+      2
+     ]
+    },
+    {
+     "args": [
+      [
+       1,
+       2
+      ],
+      []
+     ],
+     "expected": [
+      1,
+      2
+     ]
+    },
+    {
+     "args": [
+      [
+       1,
+       1,
+       2
+      ],
+      [
+       1,
+       2,
+       3
+      ]
+     ],
+     "expected": [
+      1,
+      1,
+      1,
+      2,
+      2,
+      3
+     ]
+    },
+    {
+     "args": [
+      [
+       -5,
+       0,
+       10
+      ],
+      [
+       -3,
+       0,
+       5
+      ]
+     ],
+     "expected": [
+      -5,
+      -3,
+      0,
+      0,
+      5,
+      10
+     ]
+    },
+    {
+     "args": [
+      [],
+      []
+     ],
+     "expected": []
+    }
+   ],
+   "reference_solution": "def merge_sorted_lists(a, b):\n    i = j = 0\n    result = []\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n    result.extend(a[i:])\n    result.extend(b[j:])\n    return result\n",
+   "constraints": "时间复杂度 O(n+m)，空间复杂度 O(n+m)",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L2-009",
+   "difficulty": "L2",
+   "task_type": "功能实现",
+   "description": "实现函数 parse_weather_records(records)，records 是一个字符串列表，每个字符串格式为 \"城市,日期,温度\"，例如 \"Beijing,2024-01-01,3.5\"。函数需要返回一个字典，键为城市名，值为该城市所有温度组成的列表（保持输入顺序）。如果某个城市没有记录，则不应出现在结果中。输入保证每个字符串恰好包含两个逗号，温度可以解析为 float。",
+   "entry_point": "parse_weather_records",
+   "test_cases": [
+    {
+     "args": [
+      [
+       "Beijing,2024-01-01,3.5",
+       "Shanghai,2024-01-01,8.0",
+       "Beijing,2024-01-02,5.2"
+      ]
+     ],
+     "expected": {
+      "Beijing": [
+       3.5,
+       5.2
+      ],
+      "Shanghai": [
+       8.0
+      ]
+     }
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": {}
+    },
+    {
+     "args": [
+      [
+       "Tokyo,2024-02-10,12.3",
+       "Tokyo,2024-02-11,11.1",
+       "Tokyo,2024-02-12,10.0"
+      ]
+     ],
+     "expected": {
+      "Tokyo": [
+       12.3,
+       11.1,
+       10.0
+      ]
+     }
+    },
+    {
+     "args": [
+      [
+       "Paris,2024-03-01,7.5",
+       "London,2024-03-01,6.0",
+       "Paris,2024-03-02,8.1",
+       "London,2024-03-02,6.8"
+      ]
+     ],
+     "expected": {
+      "Paris": [
+       7.5,
+       8.1
+      ],
+      "London": [
+       6.0,
+       6.8
+      ]
+     }
+    }
+   ],
+   "reference_solution": "def parse_weather_records(records):\n    result = {}\n    for record in records:\n        city, date, temp = record.split(',')\n        temp = float(temp)\n        if city not in result:\n            result[city] = []\n        result[city].append(temp)\n    return result\n",
+   "constraints": "",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L2-010",
+   "difficulty": "L2",
+   "task_type": "重构优化",
+   "description": "以下函数 calculate_order_total 用于计算订单总价，但存在重复代码和可读性问题。请重构该函数，使其逻辑清晰、避免重复，并保持功能完全一致。订单项为字典，包含 'price'（单价，float）和 'quantity'（数量，int）。函数参数 items 为订单项列表，tax_rate 为税率（float，例如 0.1 表示 10%）。函数返回含税总价，保留两位小数。\n\n待重构代码：\ndef calculate_order_total(items, tax_rate):\n    subtotal = 0\n    for item in items:\n        subtotal += item['price'] * item['quantity']\n    tax = subtotal * tax_rate\n    total = subtotal + tax\n    return round(total, 2)\n\n请将重构后的完整函数作为答案。",
+   "entry_point": "calculate_order_total",
+   "test_cases": [
+    {
+     "args": [
+      [
+       {
+        "price": 10.0,
+        "quantity": 2
+       },
+       {
+        "price": 5.5,
+        "quantity": 4
+       }
+      ],
+      0.1
+     ],
+     "expected": 46.2
+    },
+    {
+     "args": [
+      [],
+      0.2
+     ],
+     "expected": 0.0
+    },
+    {
+     "args": [
+      [
+       {
+        "price": 100.0,
+        "quantity": 1
+       }
+      ],
+      0.0
+     ],
+     "expected": 100.0
+    },
+    {
+     "args": [
+      [
+       {
+        "price": 7.25,
+        "quantity": 3
+       },
+       {
+        "price": 2.0,
+        "quantity": 5
+       }
+      ],
+      0.05
+     ],
+     "expected": 33.34
+    }
+   ],
+   "reference_solution": "def calculate_order_total(items, tax_rate):\n    subtotal = sum(item['price'] * item['quantity'] for item in items)\n    total = subtotal * (1 + tax_rate)\n    return round(total, 2)\n",
+   "constraints": "",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L2-011",
+   "difficulty": "L2",
+   "task_type": "算法",
+   "description": "实现函数 find_peak_element(nums)，nums 是一个整数列表，长度至少为 1。峰值元素是指其值严格大于左右相邻值的元素。数组可能包含多个峰值，返回任意一个峰值元素的下标即可。假设 nums[-1] = nums[n] = -∞（即边界元素若大于其唯一相邻元素也算峰值）。要求时间复杂度 O(log n)。",
+   "entry_point": "find_peak_element",
+   "test_cases": [
+    {
+     "args": [
+      [
+       1,
+       2,
+       3,
+       1
+      ]
+     ],
+     "expected": 2
+    },
+    {
+     "args": [
+      [
+       1,
+       2,
+       1,
+       3,
+       5,
+       6,
+       4
+      ]
+     ],
+     "expected": 5
+    },
+    {
+     "args": [
+      [
+       1
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       2,
+       1
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       1,
+       2
+      ]
+     ],
+     "expected": 1
+    }
+   ],
+   "reference_solution": "def find_peak_element(nums):\n    left, right = 0, len(nums) - 1\n    while left < right:\n        mid = (left + right) // 2\n        if nums[mid] > nums[mid + 1]:\n            right = mid\n        else:\n            left = mid + 1\n    return left\n",
+   "constraints": "时间复杂度 O(log n)",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L2-012",
+   "difficulty": "L2",
+   "task_type": "业务逻辑",
+   "description": "实现一个 Library 类，用于管理图书借阅。类需要支持以下方法：\n- __init__(self, copies: dict)：初始化图书库存，copies 的键为书名（字符串），值为该书的副本数量（非负整数）。\n- borrow(self, title: str) -> bool：借阅一本指定书。如果该书存在且剩余副本数大于 0，则副本数减 1 并返回 True；否则返回 False。\n- return_book(self, title: str) -> None：归还一本指定书。如果该书存在于库存中，则副本数加 1；如果不存在，则不做任何操作。\n- available_copies(self, title: str) -> int：返回指定书当前可借副本数；如果书不存在，返回 0。\n\n所有方法必须正确处理库存变化。",
+   "entry_point": "Library",
+   "test_cases": [
+    {
+     "class": "Library",
+     "ctor_args": [
+      {
+       "A001": 2,
+       "B002": 0,
+       "C003": 1
+      }
+     ],
+     "steps": [
+      [
+       "borrow",
+       "A001"
+      ],
+      [
+       "borrow",
+       "A001"
+      ],
+      [
+       "borrow",
+       "A001"
+      ],
+      [
+       "available_copies",
+       "A001"
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "class": "Library",
+     "ctor_args": [
+      {
+       "A001": 1,
+       "B002": 3
+      }
+     ],
+     "steps": [
+      [
+       "borrow",
+       "B002"
+      ],
+      [
+       "return_book",
+       "B002"
+      ],
+      [
+       "return_book",
+       "B002"
+      ],
+      [
+       "available_copies",
+       "B002"
+      ]
+     ],
+     "expected": 4
+    },
+    {
+     "class": "Library",
+     "ctor_args": [
+      {
+       "X100": 0
+      }
+     ],
+     "steps": [
+      [
+       "borrow",
+       "X100"
+      ],
+      [
+       "return_book",
+       "Y200"
+      ],
+      [
+       "available_copies",
+       "Y200"
+      ]
+     ],
+     "expected": 0
+    },
+    {
+     "class": "Library",
+     "ctor_args": [
+      {
+       "M001": 5
+      }
+     ],
+     "steps": [
+      [
+       "borrow",
+       "M001"
+      ],
+      [
+       "borrow",
+       "M001"
+      ],
+      [
+       "return_book",
+       "M001"
+      ],
+      [
+       "available_copies",
+       "M001"
+      ]
+     ],
+     "expected": 4
+    }
+   ],
+   "reference_solution": "class Library:\n    def __init__(self, copies):\n        self.copies = copies.copy()\n\n    def borrow(self, title):\n        if title in self.copies and self.copies[title] > 0:\n            self.copies[title] -= 1\n            return True\n        return False\n\n    def return_book(self, title):\n        if title in self.copies:\n            self.copies[title] += 1\n\n    def available_copies(self, title):\n        return self.copies.get(title, 0)\n",
+   "constraints": "",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L3-005",
+   "difficulty": "L3",
+   "task_type": "算法",
+   "description": "实现函数 max_sum_after_k_swaps(nums, k)，给定一个由非负整数组成的列表 nums 和一个非负整数 k，你最多可以进行 k 次操作，每次操作选择两个不同下标 i 和 j，交换 nums[i] 与 nums[j] 的值。目标是使最终列表所有元素之和最大。注意：由于交换不改变元素总和，本题实际要求返回经过最多 k 次交换后列表元素之和（即原列表元素之和）。请实现该函数并返回整数结果。",
+   "entry_point": "max_sum_after_k_swaps",
+   "test_cases": [
+    {
+     "args": [
+      [
+       1,
+       2,
+       3,
+       4
+      ],
+      2
+     ],
+     "expected": 10
+    },
+    {
+     "args": [
+      [
+       5,
+       5,
+       5,
+       5
+      ],
+      3
+     ],
+     "expected": 20
+    },
+    {
+     "args": [
+      [
+       0,
+       0,
+       0
+      ],
+      1
+     ],
+     "expected": 0
+    },
+    {
+     "args": [
+      [
+       10,
+       20,
+       30
+      ],
+      0
+     ],
+     "expected": 60
+    },
+    {
+     "args": [
+      [
+       7,
+       8,
+       9,
+       10,
+       11
+      ],
+      4
+     ],
+     "expected": 45
+    },
+    {
+     "args": [
+      [
+       100
+      ],
+      5
+     ],
+     "expected": 100
+    }
+   ],
+   "reference_solution": "def max_sum_after_k_swaps(nums, k):\n    return sum(nums)\n",
+   "constraints": "时间复杂度 O(n)，其中 n 为 nums 长度；不得使用随机数或非确定性操作。",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L3-006",
+   "difficulty": "L3",
+   "task_type": "业务逻辑",
+   "description": "实现一个类 OrderBook，用于维护某只股票的限价订单簿。订单簿包含买单和卖单，每个订单有订单号(order_id)、价格(price)、数量(quantity)。买单按价格从高到低排序，卖单按价格从低到高排序；相同价格按订单号从小到大排序。类需要支持以下方法：\n- add_order(order_id, side, price, quantity)：添加订单，side 为 'buy' 或 'sell'。\n- cancel_order(order_id)：删除指定订单，若不存在则不做任何操作。\n- get_best_buy()：返回当前最优买单（价格最高，若同价则订单号最小）的字典，格式为 {'order_id': int, 'price': int, 'quantity': int}；若无买单返回 None。\n- get_best_sell()：返回当前最优卖单（价格最低，若同价则订单号最小）的字典，格式同上；若无卖单返回 None。\n- get_order_count()：返回当前订单总数。\n所有方法必须高效，订单簿状态在多次调用间保持。",
+   "entry_point": "OrderBook",
+   "test_cases": [
+    {
+     "class": "OrderBook",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_order",
+       1,
+       "buy",
+       100,
+       10
+      ],
+      [
+       "add_order",
+       2,
+       "buy",
+       105,
+       5
+      ],
+      [
+       "add_order",
+       3,
+       "sell",
+       101,
+       8
+      ],
+      [
+       "get_best_buy"
+      ]
+     ],
+     "expected": {
+      "order_id": 2,
+      "price": 105,
+      "quantity": 5
+     }
+    },
+    {
+     "class": "OrderBook",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_order",
+       1,
+       "sell",
+       100,
+       10
+      ],
+      [
+       "add_order",
+       2,
+       "sell",
+       100,
+       5
+      ],
+      [
+       "add_order",
+       3,
+       "sell",
+       99,
+       7
+      ],
+      [
+       "get_best_sell"
+      ]
+     ],
+     "expected": {
+      "order_id": 3,
+      "price": 99,
+      "quantity": 7
+     }
+    },
+    {
+     "class": "OrderBook",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_order",
+       1,
+       "buy",
+       100,
+       10
+      ],
+      [
+       "add_order",
+       2,
+       "buy",
+       100,
+       5
+      ],
+      [
+       "get_best_buy"
+      ]
+     ],
+     "expected": {
+      "order_id": 1,
+      "price": 100,
+      "quantity": 10
+     }
+    },
+    {
+     "class": "OrderBook",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_order",
+       1,
+       "buy",
+       100,
+       10
+      ],
+      [
+       "add_order",
+       2,
+       "sell",
+       101,
+       5
+      ],
+      [
+       "cancel_order",
+       1
+      ],
+      [
+       "get_best_buy"
+      ]
+     ],
+     "expected": null
+    },
+    {
+     "class": "OrderBook",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_order",
+       1,
+       "buy",
+       100,
+       10
+      ],
+      [
+       "add_order",
+       2,
+       "sell",
+       101,
+       5
+      ],
+      [
+       "cancel_order",
+       2
+      ],
+      [
+       "get_order_count"
+      ]
+     ],
+     "expected": 1
+    },
+    {
+     "class": "OrderBook",
+     "ctor_args": [],
+     "steps": [
+      [
+       "add_order",
+       1,
+       "buy",
+       100,
+       10
+      ],
+      [
+       "add_order",
+       2,
+       "buy",
+       105,
+       5
+      ],
+      [
+       "add_order",
+       3,
+       "sell",
+       101,
+       8
+      ],
+      [
+       "cancel_order",
+       2
+      ],
+      [
+       "get_best_buy"
+      ]
+     ],
+     "expected": {
+      "order_id": 1,
+      "price": 100,
+      "quantity": 10
+     }
+    }
+   ],
+   "reference_solution": "class OrderBook:\n    def __init__(self):\n        self._orders = {}\n        self._buy_orders = []\n        self._sell_orders = []\n\n    def add_order(self, order_id, side, price, quantity):\n        if order_id in self._orders:\n            self.cancel_order(order_id)\n        order = {'order_id': order_id, 'price': price, 'quantity': quantity}\n        self._orders[order_id] = (side, order)\n        if side == 'buy':\n            self._buy_orders.append(order)\n            self._buy_orders.sort(key=lambda x: (-x['price'], x['order_id']))\n        else:\n            self._sell_orders.append(order)\n            self._sell_orders.sort(key=lambda x: (x['price'], x['order_id']))\n\n    def cancel_order(self, order_id):\n        if order_id not in self._orders:\n            return\n        side, order = self._orders.pop(order_id)\n        if side == 'buy':\n            self._buy_orders.remove(order)\n        else:\n            self._sell_orders.remove(order)\n\n    def get_best_buy(self):\n        if not self._buy_orders:\n            return None\n        return self._buy_orders[0].copy()\n\n    def get_best_sell(self):\n        if not self._sell_orders:\n            return None\n        return self._sell_orders[0].copy()\n\n    def get_order_count(self):\n        return len(self._orders)\n",
+   "constraints": "不得使用数据库或外部存储；所有操作必须在内存中完成。",
+   "split": "rule_dev"
+  },
+  {
+   "task_id": "L3-007",
+   "difficulty": "L3",
+   "task_type": "功能实现",
+   "description": "实现函数 parse_log_and_compute_stats(log_lines)，输入是一个字符串列表 log_lines，每个字符串是一行日志，格式为：'时间戳 级别 消息'，其中时间戳为整数（毫秒），级别为 'INFO'、'WARN' 或 'ERROR'，消息为不含空格的字符串。函数需要返回一个字典，包含以下统计信息：\n- 'total_lines': 日志总行数\n- 'error_count': 级别为 ERROR 的行数\n- 'warn_count': 级别为 WARN 的行数\n- 'info_count': 级别为 INFO 的行数\n- 'first_timestamp': 最早的时间戳（整数）\n- 'last_timestamp': 最晚的时间戳（整数）\n- 'unique_messages': 所有不同消息按字典序排序后的列表\n如果输入列表为空，则返回 {'total_lines': 0, 'error_count': 0, 'warn_count': 0, 'info_count': 0, 'first_timestamp': None, 'last_timestamp': None, 'unique_messages': []}。",
+   "entry_point": "parse_log_and_compute_stats",
+   "test_cases": [
+    {
+     "args": [
+      [
+       "100 INFO start",
+       "200 WARN disk",
+       "300 ERROR fail",
+       "400 INFO end"
+      ]
+     ],
+     "expected": {
+      "total_lines": 4,
+      "error_count": 1,
+      "warn_count": 1,
+      "info_count": 2,
+      "first_timestamp": 100,
+      "last_timestamp": 400,
+      "unique_messages": [
+       "disk",
+       "end",
+       "fail",
+       "start"
+      ]
+     }
+    },
+    {
+     "args": [
+      []
+     ],
+     "expected": {
+      "total_lines": 0,
+      "error_count": 0,
+      "warn_count": 0,
+      "info_count": 0,
+      "first_timestamp": null,
+      "last_timestamp": null,
+      "unique_messages": []
+     }
+    },
+    {
+     "args": [
+      [
+       "500 ERROR crash",
+       "500 ERROR crash",
+       "100 INFO boot"
+      ]
+     ],
+     "expected": {
+      "total_lines": 3,
+      "error_count": 2,
+      "warn_count": 0,
+      "info_count": 1,
+      "first_timestamp": 100,
+      "last_timestamp": 500,
+      "unique_messages": [
+       "boot",
+       "crash"
+      ]
+     }
+    },
+    {
+     "args": [
+      [
+       "1000 WARN memory",
+       "2000 WARN memory",
+       "3000 INFO ok"
+      ]
+     ],
+     "expected": {
+      "total_lines": 3,
+      "error_count": 0,
+      "warn_count": 2,
+      "info_count": 1,
+      "first_timestamp": 1000,
+      "last_timestamp": 3000,
+      "unique_messages": [
+       "memory",
+       "ok"
+      ]
+     }
+    },
+    {
+     "args": [
+      [
+       "42 INFO answer"
+      ]
+     ],
+     "expected": {
+      "total_lines": 1,
+      "error_count": 0,
+      "warn_count": 0,
+      "info_count": 1,
+      "first_timestamp": 42,
+      "last_timestamp": 42,
+      "unique_messages": [
+       "answer"
+      ]
+     }
+    }
+   ],
+   "reference_solution": "def parse_log_and_compute_stats(log_lines):\n    if not log_lines:\n        return {\n            'total_lines': 0,\n            'error_count': 0,\n            'warn_count': 0,\n            'info_count': 0,\n            'first_timestamp': None,\n            'last_timestamp': None,\n            'unique_messages': []\n        }\n    total = len(log_lines)\n    error_count = 0\n    warn_count = 0\n    info_count = 0\n    timestamps = []\n    messages = set()\n    for line in log_lines:\n        parts = line.split()\n        ts = int(parts[0])\n        level = parts[1]\n        msg = parts[2]\n        timestamps.append(ts)\n        messages.add(msg)\n        if level == 'ERROR':\n            error_count += 1\n        elif level == 'WARN':\n            warn_count += 1\n        elif level == 'INFO':\n            info_count += 1\n    return {\n        'total_lines': total,\n        'error_count': error_count,\n        'warn_count': warn_count,\n        'info_count': info_count,\n        'first_timestamp': min(timestamps),\n        'last_timestamp': max(timestamps),\n        'unique_messages': sorted(messages)\n    }\n",
+   "constraints": "时间复杂度 O(n log n)，其中 n 为日志行数；不得使用外部库。",
+   "split": "holdout"
+  },
+  {
+   "task_id": "L3-008",
+   "difficulty": "L3",
+   "task_type": "重构优化",
+   "description": "以下代码实现了一个简单的订单折扣计算器，但存在可读性差、重复代码多、扩展性差的问题。请重构代码，实现一个函数 calculate_order_total(items, customer_tier)，其中 items 是一个列表，每个元素为字典，包含 'name'（字符串）、'price'（数字）、'quantity'（整数）；customer_tier 是字符串，取值为 'regular'、'silver'、'gold'。折扣规则：regular 无折扣；silver 享受 5% 折扣；gold 享受 10% 折扣。此外，如果订单总价（折扣前）超过 1000，则额外享受 5% 折扣（在等级折扣基础上叠加）。函数返回折扣后的总价，保留两位小数。请重构代码，使其结构清晰、易于扩展新的客户等级，并保持功能完全一致。\n\n待重构代码：\ndef calculate_order_total(items, customer_tier):\n    total = 0\n    for item in items:\n        total += item['price'] * item['quantity']\n    if customer_tier == 'regular':\n        discount = 0\n    elif customer_tier == 'silver':\n        discount = 0.05\n    elif customer_tier == 'gold':\n        discount = 0.10\n    else:\n        discount = 0\n    total = total * (1 - discount)\n    if total > 1000:\n        total = total * 0.95\n    return round(total, 2)",
+   "entry_point": "calculate_order_total",
+   "test_cases": [
+    {
+     "args": [
+      [
+       {
+        "name": "apple",
+        "price": 10,
+        "quantity": 2
+       },
+       {
+        "name": "banana",
+        "price": 5,
+        "quantity": 4
+       }
+      ],
+      "regular"
+     ],
+     "expected": 40.0
+    },
+    {
+     "args": [
+      [
+       {
+        "name": "laptop",
+        "price": 1200,
+        "quantity": 1
+       }
+      ],
+      "silver"
+     ],
+     "expected": 1083.0
+    },
+    {
+     "args": [
+      [
+       {
+        "name": "phone",
+        "price": 800,
+        "quantity": 2
+       }
+      ],
+      "gold"
+     ],
+     "expected": 1368.0
+    },
+    {
+     "args": [
+      [
+       {
+        "name": "book",
+        "price": 30,
+        "quantity": 3
+       }
+      ],
+      "regular"
+     ],
+     "expected": 90.0
+    },
+    {
+     "args": [
+      [
+       {
+        "name": "tv",
+        "price": 1500,
+        "quantity": 1
+       }
+      ],
+      "gold"
+     ],
+     "expected": 1282.5
+    },
+    {
+     "args": [
+      [
+       {
+        "name": "mouse",
+        "price": 25,
+        "quantity": 1
+       }
+      ],
+      "silver"
+     ],
+     "expected": 23.75
+    }
+   ],
+   "reference_solution": "def calculate_order_total(items, customer_tier):\n    tier_discounts = {\n        'regular': 0.0,\n        'silver': 0.05,\n        'gold': 0.10\n    }\n    subtotal = sum(item['price'] * item['quantity'] for item in items)\n    discount = tier_discounts.get(customer_tier, 0.0)\n    total = subtotal * (1 - discount)\n    if subtotal > 1000:\n        total *= 0.95\n    return round(total, 2)\n",
+   "constraints": "重构后代码应避免重复的条件判断，使用数据驱动方式管理折扣规则；保持函数签名不变。",
+   "split": "holdout"
+  }
+ ]
+}
