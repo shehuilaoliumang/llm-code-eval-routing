@@ -66,6 +66,9 @@
   }
   .mchip:hover { border-color: var(--purple); box-shadow: 0 1px 4px rgba(83,74,183,0.15); }
   .mchip .tag { font-size: 10px; color: var(--muted); }
+  .mchip .plat { font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+  .mchip .plat.volc { background: #eaf3de; color: #3b6d11; }
+  .mchip .plat.ali { background: #e6f1fb; color: #185fa5; }
   .mchip.selected { border-color: var(--purple); background: #eeedfe; }
   .mchip .x {
     cursor: pointer; color: var(--muted); font-weight: 700; padding: 0 2px;
@@ -164,13 +167,15 @@ let selectedSet = new Set();
 let modelMeta = {};
 
 function chipHtml(id, meta, selected) {
-  const platTag = meta.platform === 'volcengine' ? '方舟' : '百炼';
+  const plat = meta.platform === 'volcengine'
+    ? '<span class="plat volc">方舟</span>'
+    : '<span class="plat ali">百炼</span>';
   const unverified = meta.verified === false ? '<span class="tag">未配置</span>' : '';
   if (selected) {
-    return `<span class="mchip selected" data-id="${id}">${id} ${unverified}
+    return `<span class="mchip selected" data-id="${id}">${id} ${plat} ${unverified}
       <span class="x" onclick="deselectModel('${id}')" title="取消选择">×</span></span>`;
   }
-  return `<span class="mchip" data-id="${id}" onclick="selectModel('${id}')">${id} ${unverified}</span>`;
+  return `<span class="mchip" data-id="${id}" onclick="selectModel('${id}')">${id} ${plat} ${unverified}</span>`;
 }
 
 function renderSelected() {
