@@ -76,6 +76,23 @@ class EvalRequest(BaseModel):
     workers: int = Field(default=6, ge=1, le=12, description="并发数")
 
 
+class TestRequest(BaseModel):
+    models: list[dict] = Field(default_factory=list,
+                               description="[{platform, id}] 待连通测试的模型")
+    workers: int = Field(default=5, ge=1, le=10, description="连通测试并发数")
+
+
+# 名称预过滤：排除明显非代码/文本的模型（语音/图像/向量/重排）
+_EXCLUDE_KEYWORDS = ("speech", "asr", "tts", "voice", "audio",
+                     "image", "vision", "ocr", "video",
+                     "embedding", "embed", "rerank")
+
+
+def _is_code_candidate(model_id: str) -> bool:
+    low = model_id.lower()
+    return not any(k in low for k in _EXCLUDE_KEYWORDS)
+
+
 class AppState:
     def __init__(self):
         load_dotenv(os.path.join(ROOT, ".env.local"))
@@ -167,6 +184,49 @@ class AppState:
         }
         return model_id
 
+    def _disable_thinking_for(self, platform: str):
+        """按平台返回关闭思考链的 extra_body。"""
+        if platform == "volcengine":
+            return {"thinking": {"type": "disabled"}}
+        return {"chat_template_kwargs": {"enable_thinking": False}}
+
+    def test_connectivity(self, models: list, workers: int = 5):
+        """并发连通测试：名称预过滤后，对每个模型发一次最小调用。
+
+        返回 {"tested": N, "available": M, "results": {id: {platform, available, error}}}
+        每次调用约 ¥0.0001~0.001；并发受限流保护。
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        filtered = [m for m in models if _is_code_candidate(m.get("id", ""))]
+
+        def _test_one(m):
+            mid, platform = m["id"], m["platform"]
+            try:
+                resp = self.client.chat(
+                    platform=platform, model=mid,
+                    messages=[{"role": "user", "content": "hi"}],
+                    max_tokens=8, timeout=15,
+                    extra_body=self._disable_thinking_for(platform),
+                )
+                if resp.error:
+                    return mid, {"platform": platform, "available": False,
+                                 "error": resp.error[:100]}
+                return mid, {"platform": platform, "available": True, "error": ""}
+            except Exception as e:  # noqa: BLE001
+                return mid, {"platform": platform, "available": False,
+                             "error": f"{type(e).__name__}: {str(e)[:80]}"}
+
+        results = {}
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            for mid, res in ex.map(_test_one, filtered):
+                results[mid] = res
+        return {
+            "tested": len(filtered),
+            "available": sum(1 for r in results.values() if r["available"]),
+            "results": results,
+        }
+
     def model_info(self, model_id):
         cfg = self.registry.get(model_id)
         return {
@@ -236,6 +296,12 @@ def list_models():
 def list_available_models(refresh: bool = False):
     """动态查询两平台所有可用模型（免费 models.list，带 5 分钟缓存）。"""
     return state.list_platform_models(refresh=refresh)
+
+
+@app.post("/api/models/test")
+def test_models(req: TestRequest):
+    """连通测试：名称过滤后逐个最小调用，返回可用性（花钱，单次约 ¥0.0001~0.001）。"""
+    return state.test_connectivity(req.models, workers=req.workers)
 
 
 @app.get("/api/tasks")

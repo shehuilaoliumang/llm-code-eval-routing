@@ -78,6 +78,7 @@
     <div class="row" id="modelList">加载中…</div>
     <div style="margin-top:12px;">
       <button class="btn" id="loadPlatformBtn" onclick="loadPlatformModels()" style="background:#6b6f7a;">从平台加载全部模型</button>
+      <button class="btn" id="testBtn" onclick="testConnectivity()" style="background:#185fa5;margin-left:8px;">连通测试</button>
       <span style="font-size:12px;color:var(--muted);margin-left:8px;" id="platformInfo"></span>
     </div>
     <div id="platformModels" style="margin-top:10px;display:none;"></div>
@@ -161,22 +162,64 @@ async function loadPlatformModels() {
   btn.disabled = false; btn.textContent = '从平台加载全部模型';
 
   const verified = new Set(d.verified_ids || []);
-  const renderGroup = (title, models) => {
+  const renderGroup = (platform, title, models) => {
     const others = (models || []).filter(m => !verified.has(m));
     if (!others.length) return '';
     return `<div style="margin-bottom:10px;">
       <div style="font-size:13px;font-weight:600;">${title} <span style="font-weight:400;color:var(--muted);font-size:12px;">（${models.length} 个可用，未配置 ${others.length} 个）</span></div>
       <div class="row" style="max-height:180px;overflow-y:auto;margin-top:6px;">${others.map(m =>
-        `<label class="chk" style="opacity:0.9;"><input type="checkbox" class="pmodel" value="${m}"> ${m}</label>`
+        `<label class="chk" style="opacity:0.9;"><input type="checkbox" class="pmodel" value="${m}" data-platform="${platform}"> ${m}</label>`
       ).join('')}</div></div>`;
   };
-  $('platformModels').innerHTML = renderGroup('火山方舟', d.volcengine) + renderGroup('阿里云百炼', d.aliyun);
+  $('platformModels').innerHTML = renderGroup('volcengine', '火山方舟', d.volcengine) + renderGroup('aliyun', '阿里云百炼', d.aliyun);
   $('platformModels').style.display = 'block';
   $('platformInfo').textContent = `已验证候选 ${(d.verified_ids||[]).length} 款可直接评估；其余为平台可用但未配置（成本/思考链控制可能不准）`;
   if (d.errors && d.errors.length) {
     $('platformInfo').textContent += ' | ' + d.errors.join('；');
   }
   document.querySelectorAll('.pmodel').forEach(c => c.addEventListener('change', updateCount));
+}
+
+async function testConnectivity() {
+  const btn = $('testBtn');
+  const models = [];
+  document.querySelectorAll('.pmodel').forEach(c => {
+    models.push({platform: c.dataset.platform, id: c.value});
+  });
+  if (!models.length) {
+    $('platformInfo').textContent = '请先「从平台加载全部模型」';
+    return;
+  }
+  btn.disabled = true; btn.textContent = '测试中…';
+  $('platformInfo').textContent = `正在连通测试 ${models.length} 个模型（并发 5，约需数十秒）…`;
+  try {
+    const r = await fetch('/api/models/test', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({models, workers: 5}),
+    });
+    const d = await r.json();
+    const results = d.results || {};
+    let avail = 0, unavail = 0;
+    document.querySelectorAll('.pmodel').forEach(c => {
+      const res = results[c.value];
+      if (res && res.available) {
+        c.checked = true; c.disabled = false;
+        c.parentElement.style.opacity = '1'; c.parentElement.title = '可用';
+        avail++;
+      } else if (res && !res.available) {
+        c.checked = false; c.disabled = true;
+        c.parentElement.style.opacity = '0.35';
+        c.parentElement.title = res.error || '不可用';
+        unavail++;
+      }
+    });
+    $('platformInfo').textContent = `测试完成：${avail} 个可用（已勾选）、${unavail} 个不可用（已置灰，悬停看原因）`;
+    updateCount();
+  } catch (e) {
+    $('platformInfo').textContent = '测试失败：' + e;
+  } finally {
+    btn.disabled = false; btn.textContent = '连通测试';
+  }
 }
 
 async function startEval() {
