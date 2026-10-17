@@ -8,7 +8,7 @@
   :root {
     --bg: #f6f7fb; --card: #ffffff; --border: #e4e6ee;
     --text: #26221c; --muted: #6b6f7a;
-    --purple: #534ab7; --green: #3b6d11; --coral: #993c1d;
+    --purple: #534ab7; --green: #3b6d11; --coral: #993c1d; --blue: #185fa5;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -24,25 +24,49 @@
     padding: 16px 20px; margin-top: 16px;
   }
   .card h2 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
-  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   label.chk {
     display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
     padding: 5px 10px; border: 1px solid var(--border); border-radius: 8px;
     cursor: pointer; background: var(--bg);
   }
   label.chk input { accent-color: var(--purple); }
-  label.chk .tier { color: var(--muted); font-size: 11px; }
   .btn {
     background: var(--purple); color: #fff; border: none; border-radius: 8px;
     padding: 9px 20px; font-size: 14px; cursor: pointer; font-weight: 500;
   }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn.stop { background: var(--coral); }
   .field { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
   .field input, .field select {
     padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
   }
   .field input[type=number] { width: 60px; }
+
+  /* 穿梭框 chip */
+  .chip-area {
+    min-height: 40px; border: 1px dashed var(--border); border-radius: 10px;
+    padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; background: #fbfbfe;
+  }
+  .chip-area.empty::after {
+    content: "（空）"; color: var(--muted); font-size: 12px; align-self: center;
+  }
+  .mchip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 13px; cursor: pointer; background: #fff; user-select: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .mchip:hover { border-color: var(--purple); box-shadow: 0 1px 4px rgba(83,74,183,0.15); }
+  .mchip .tag { font-size: 10px; color: var(--muted); }
+  .mchip.selected { border-color: var(--purple); background: #eeedfe; }
+  .mchip .x {
+    cursor: pointer; color: var(--muted); font-weight: 700; padding: 0 2px;
+  }
+  .mchip .x:hover { color: var(--coral); }
+  .mchip.disabled { opacity: 0.35; cursor: not-allowed; }
+  .mchip.disabled:hover { border-color: var(--border); box-shadow: none; }
+  .group-title { font-size: 13px; font-weight: 600; margin: 12px 0 6px; }
+
   .progress-bar {
     height: 10px; background: var(--bg); border: 1px solid var(--border);
     border-radius: 6px; overflow: hidden; margin: 10px 0 6px;
@@ -71,21 +95,28 @@
 <body>
 <div class="page">
   <h1>LLM 代码生成能力评估 · 实时面板</h1>
-  <div class="sub">选择模型与任务 → 启动评估 → 实时查看每道题的判分进度（SSE 推送）</div>
+  <div class="sub">选模型 → 连通测试 → 启动评估 → 实时看每道题判分进度（SSE 推送）</div>
 
   <div class="card">
-    <h2>① 选择模型（<span id="modelCount">0</span> 个已选）</h2>
-    <div class="row" id="modelList">加载中…</div>
+    <h2>① 已选模型（<span id="selCount">0</span>）<span style="font-size:12px;color:var(--muted);font-weight:400;">· 点 × 移回下方</span></h2>
+    <div class="chip-area" id="selectedArea"></div>
     <div style="margin-top:12px;">
       <button class="btn" id="loadPlatformBtn" onclick="loadPlatformModels()" style="background:#6b6f7a;">从平台加载全部模型</button>
       <button class="btn" id="testBtn" onclick="testConnectivity()" style="background:#185fa5;margin-left:8px;">连通测试</button>
       <span style="font-size:12px;color:var(--muted);margin-left:8px;" id="platformInfo"></span>
     </div>
-    <div id="platformModels" style="margin-top:10px;display:none;"></div>
+  </div>
+
+  <div class="card" id="optionalCard" style="display:none;">
+    <h2>② 可选模型（点击加入上方）</h2>
+    <div class="group-title">火山方舟</div>
+    <div class="chip-area" id="volcArea"></div>
+    <div class="group-title">阿里云百炼</div>
+    <div class="chip-area" id="aliArea"></div>
   </div>
 
   <div class="card">
-    <h2>② 选择任务难度</h2>
+    <h2>③ 选择任务难度</h2>
     <div class="row" id="diffList">
       <label class="chk"><input type="checkbox" class="diff" value="L1" checked> L1 入门</label>
       <label class="chk"><input type="checkbox" class="diff" value="L2" checked> L2 进阶</label>
@@ -101,7 +132,7 @@
   </div>
 
   <div class="card">
-    <h2>③ 实时进度</h2>
+    <h2>④ 实时进度</h2>
     <div class="progress-bar"><div class="fill" id="fill"></div></div>
     <div class="stat">
       <div><b id="statDone">0</b><span> / </span><b id="statTotal">0</b> 完成</div>
@@ -116,35 +147,68 @@
 <script>
 const $ = id => document.getElementById(id);
 let es = null;
-let allModels = [];
 let allTasks = [];
 let costSum = 0, qualitySum = 0, qualityCnt = 0, startTime = 0;
 
+// 穿梭框状态：selectedSet = 已选模型 ID；modelMeta = id -> {platform, verified}
+let selectedSet = new Set();
+let modelMeta = {};
+
+function chipHtml(id, meta, selected) {
+  const platTag = meta.platform === 'volcengine' ? '方舟' : '百炼';
+  const unverified = meta.verified === false ? '<span class="tag">未配置</span>' : '';
+  if (selected) {
+    return `<span class="mchip selected" data-id="${id}">${id} ${unverified}
+      <span class="x" onclick="deselectModel('${id}')" title="取消选择">×</span></span>`;
+  }
+  return `<span class="mchip" data-id="${id}" onclick="selectModel('${id}')">${id} ${unverified}</span>`;
+}
+
+function renderSelected() {
+  const area = $('selectedArea');
+  area.innerHTML = [...selectedSet].map(id => chipHtml(id, modelMeta[id] || {}, true)).join('');
+  area.classList.toggle('empty', selectedSet.size === 0);
+  $('selCount').textContent = selectedSet.size;
+}
+
+function renderOptional() {
+  const volc = [], ali = [];
+  for (const [id, meta] of Object.entries(modelMeta)) {
+    if (selectedSet.has(id)) continue;
+    if (meta.available === false) continue;  // 连通测试失败的不再展示
+    (meta.platform === 'volcengine' ? volc : ali).push(id);
+  }
+  $('volcArea').innerHTML = volc.map(id => chipHtml(id, modelMeta[id], false)).join('');
+  $('aliArea').innerHTML = ali.map(id => chipHtml(id, modelMeta[id], false)).join('');
+  $('volcArea').classList.toggle('empty', volc.length === 0);
+  $('aliArea').classList.toggle('empty', ali.length === 0);
+}
+
+function selectModel(id) {
+  selectedSet.add(id);
+  renderSelected();
+  renderOptional();
+}
+
+function deselectModel(id) {
+  selectedSet.delete(id);
+  renderSelected();
+  renderOptional();
+}
+
 async function loadModels() {
   const r = await fetch('/api/models'); const d = await r.json();
-  allModels = d.models;
-  $('modelList').innerHTML = allModels.map(m =>
-    `<label class="chk"><input type="checkbox" class="model" value="${m.id}" checked>
-     ${m.id} <span class="tier">${m.tier} · ${m.display}</span></label>`
-  ).join('');
-  $('modelCount').textContent = allModels.length;
-  document.querySelectorAll('.model').forEach(c => c.addEventListener('change', updateCount));
+  for (const m of d.models) {
+    modelMeta[m.id] = { platform: m.platform, verified: true };
+    selectedSet.add(m.id);  // 已验证候选默认选中
+  }
+  renderSelected();
+  renderOptional();
 }
+
 async function loadTasks() {
   const r = await fetch('/api/tasks'); const d = await r.json();
   allTasks = d.tasks;
-}
-function updateCount() {
-  $('modelCount').textContent = document.querySelectorAll('.model:checked, .pmodel:checked').length;
-}
-
-function selectedModels() {
-  const verified = allModels.filter(m => document.querySelector(`.model[value="${m.id}"]`)?.checked).map(m => m.id);
-  const platform = [...document.querySelectorAll('.pmodel:checked')].map(c => c.value);
-  return [...verified, ...platform];
-}
-function selectedDiffs() {
-  return [...document.querySelectorAll('.diff:checked')].map(c => c.value);
 }
 
 async function loadPlatformModels() {
@@ -162,59 +226,54 @@ async function loadPlatformModels() {
   btn.disabled = false; btn.textContent = '从平台加载全部模型';
 
   const verified = new Set(d.verified_ids || []);
-  const renderGroup = (platform, title, models) => {
-    const others = (models || []).filter(m => !verified.has(m));
-    if (!others.length) return '';
-    return `<div style="margin-bottom:10px;">
-      <div style="font-size:13px;font-weight:600;">${title} <span style="font-weight:400;color:var(--muted);font-size:12px;">（${models.length} 个可用，未配置 ${others.length} 个）</span></div>
-      <div class="row" style="max-height:180px;overflow-y:auto;margin-top:6px;">${others.map(m =>
-        `<label class="chk" style="opacity:0.9;"><input type="checkbox" class="pmodel" value="${m}" data-platform="${platform}"> ${m}</label>`
-      ).join('')}</div></div>`;
+  let added = 0;
+  const addGroup = (platform, models) => {
+    for (const id of (models || [])) {
+      if (verified.has(id) || modelMeta[id]) continue;  // 跳过已验证候选和已加载
+      modelMeta[id] = { platform: platform, verified: false };
+      added++;
+    }
   };
-  $('platformModels').innerHTML = renderGroup('volcengine', '火山方舟', d.volcengine) + renderGroup('aliyun', '阿里云百炼', d.aliyun);
-  $('platformModels').style.display = 'block';
-  $('platformInfo').textContent = `已验证候选 ${(d.verified_ids||[]).length} 款可直接评估；其余为平台可用但未配置（成本/思考链控制可能不准）`;
+  addGroup('volcengine', d.volcengine);
+  addGroup('aliyun', d.aliyun);
+  $('optionalCard').style.display = 'block';
+  renderOptional();
+  $('platformInfo').textContent = `已加载 ${added} 个平台模型（点「连通测试」过滤不可用的）`;
   if (d.errors && d.errors.length) {
     $('platformInfo').textContent += ' | ' + d.errors.join('；');
   }
-  document.querySelectorAll('.pmodel').forEach(c => c.addEventListener('change', updateCount));
 }
 
 async function testConnectivity() {
   const btn = $('testBtn');
   const models = [];
-  document.querySelectorAll('.pmodel').forEach(c => {
-    models.push({platform: c.dataset.platform, id: c.value});
-  });
+  for (const [id, meta] of Object.entries(modelMeta)) {
+    if (!selectedSet.has(id)) models.push({ platform: meta.platform, id });
+  }
   if (!models.length) {
-    $('platformInfo').textContent = '请先「从平台加载全部模型」';
+    $('platformInfo').textContent = '没有待测的可选模型（请先「从平台加载全部模型」）';
     return;
   }
   btn.disabled = true; btn.textContent = '测试中…';
   $('platformInfo').textContent = `正在连通测试 ${models.length} 个模型（并发 5，约需数十秒）…`;
   try {
     const r = await fetch('/api/models/test', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({models, workers: 5}),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ models, workers: 5 }),
     });
     const d = await r.json();
     const results = d.results || {};
     let avail = 0, unavail = 0;
-    document.querySelectorAll('.pmodel').forEach(c => {
-      const res = results[c.value];
-      if (res && res.available) {
-        c.checked = true; c.disabled = false;
-        c.parentElement.style.opacity = '1'; c.parentElement.title = '可用';
-        avail++;
-      } else if (res && !res.available) {
-        c.checked = false; c.disabled = true;
-        c.parentElement.style.opacity = '0.35';
-        c.parentElement.title = res.error || '不可用';
-        unavail++;
+    for (const [id, res] of Object.entries(results)) {
+      if (!modelMeta[id]) continue;
+      if (res.available) {
+        modelMeta[id].available = true; avail++;
+      } else {
+        modelMeta[id].available = false; modelMeta[id].error = res.error; unavail++;
       }
-    });
-    $('platformInfo').textContent = `测试完成：${avail} 个可用（已勾选）、${unavail} 个不可用（已置灰，悬停看原因）`;
-    updateCount();
+    }
+    renderOptional();
+    $('platformInfo').textContent = `测试完成：${avail} 个可用、${unavail} 个不可用（不可用的已移除）`;
   } catch (e) {
     $('platformInfo').textContent = '测试失败：' + e;
   } finally {
@@ -222,8 +281,12 @@ async function testConnectivity() {
   }
 }
 
+function selectedDiffs() {
+  return [...document.querySelectorAll('.diff:checked')].map(c => c.value);
+}
+
 async function startEval() {
-  const models = selectedModels();
+  const models = [...selectedSet];
   const diffs = selectedDiffs();
   const taskIds = allTasks.filter(t => diffs.includes(t.difficulty)).map(t => t.task_id);
   if (!models.length || !taskIds.length) { alert('请至少选择一个模型和一个难度'); return; }
@@ -234,12 +297,11 @@ async function startEval() {
   $('events').innerHTML = '';
   $('statCost').textContent = '¥0.00'; $('statQuality').textContent = '—';
 
-  // 先建立 SSE 订阅，再发起评估，避免漏事件
   openSSE();
   await fetch('/api/eval', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({models, task_ids: taskIds,
-                          runs: +$('runs').value, workers: +$('workers').value}),
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ models, task_ids: taskIds,
+                          runs: +$('runs').value, workers: +$('workers').value }),
   });
 }
 
