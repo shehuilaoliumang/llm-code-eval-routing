@@ -29,16 +29,16 @@
     background: var(--bg);
     color: var(--text);
     line-height: 1.7;
-    padding: 40px 20px 60px;
+    padding: clamp(16px, 4vw, 40px) clamp(12px, 3vw, 20px) clamp(32px, 6vw, 60px);
   }
   .page { max-width: 920px; margin: 0 auto; }
   .hero {
     text-align: center;
-    padding: 32px 24px;
-    margin-bottom: 24px;
+    padding: clamp(20px, 4vw, 32px) 16px;
+    margin-bottom: clamp(16px, 3vw, 24px);
   }
-  .hero h1 { font-size: 26px; font-weight: 600; color: var(--purple-dark); letter-spacing: 0.5px; }
-  .hero .sub { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .hero h1 { font-size: clamp(20px, 4.5vw, 26px); font-weight: 600; color: var(--purple-dark); letter-spacing: 0.5px; }
+  .hero .sub { font-size: clamp(12px, 2.5vw, 14px); color: var(--muted); margin-top: 8px; }
   .hero .tag {
     display: inline-block; margin-top: 14px;
     font-size: 12px; color: var(--purple);
@@ -49,7 +49,7 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 24px 28px;
+    padding: clamp(16px, 3vw, 24px) clamp(16px, 3vw, 28px);
     margin-bottom: 20px;
   }
   .card h2 {
@@ -74,9 +74,6 @@
   .formula .hl { color: var(--purple); font-weight: 600; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  @media (max-width: 720px) {
-    .grid-2, .grid-4 { grid-template-columns: 1fr; }
-  }
   .mini {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -95,6 +92,7 @@
     color: var(--muted);
   }
   .chip b { color: var(--text); font-weight: 600; }
+  .table-wrap { width: 100%; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
   th { color: var(--muted); font-weight: 500; font-size: 12px; }
@@ -112,6 +110,42 @@
     border-radius: 8px;
     padding: 10px 14px;
     margin-top: 14px;
+  }
+
+  /* 移动端映射（桌面隐藏） */
+  .mobile-map { display: none; }
+  .mm-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .mm-diff, .mm-model { display: flex; flex-direction: column; }
+  .mm-diff b, .mm-model b { font-size: 14px; font-weight: 600; }
+  .mm-diff span, .mm-model span { font-size: 12px; color: var(--muted); }
+  .mm-arrow {
+    text-align: center;
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.2;
+    margin: 4px 0;
+  }
+  .mm-model.t3 { border-left: 3px solid var(--green); padding-left: 10px; }
+  .mm-model.t2 { border-left: 3px solid var(--amber); padding-left: 10px; }
+  .mm-model.t1 { border-left: 3px solid var(--blue); padding-left: 10px; }
+  .mm-model.t0 { border-left: 3px solid var(--purple); padding-left: 10px; }
+
+  /* 平板：四步决策改 2×2 */
+  @media (max-width: 880px) {
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+  /* 手机：全单列 + SVG 换 HTML 映射 + 表格横向滚动 */
+  @media (max-width: 640px) {
+    .grid-2, .grid-4 { grid-template-columns: 1fr; }
+    .svg-wrap { display: none; }
+    .mobile-map { display: block; }
+    table { min-width: 520px; }
   }
 </style>
 </head>
@@ -155,6 +189,7 @@
   <div class="card">
     <h2>难度 → 档位分派</h2>
     <div class="desc">每档双平台互备（火山方舟 / 阿里云百炼各一款），单平台故障可切换。</div>
+
     <div class="svg-wrap">
       <svg viewBox="0 0 900 396" role="img" xmlns="http://www.w3.org/2000/svg">
         <title>难度到模型档位的分派映射</title>
@@ -209,6 +244,30 @@
         <text x="40" y="392" font-size="12" fill="#5f5e5a">低置信度保守策略：分类置信度 &lt; 0.7 时难度升一档重走筛选排序</text>
       </svg>
     </div>
+
+    <div class="mobile-map">
+      <div class="mm-item">
+        <div class="mm-diff"><b>L1 入门</b><span>单函数 · 短代码</span></div>
+        <div class="mm-arrow">↓</div>
+        <div class="mm-model t3"><b>T3 轻量级</b><span>doubao-seed-2.0-mini · qwen3.7-flash</span></div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-diff"><b>L2 进阶</b><span>多函数 · 完整类</span></div>
+        <div class="mm-arrow">↓</div>
+        <div class="mm-model t2"><b>T2 均衡级</b><span>doubao-seed-2.1-lite · qwen3.7-plus</span></div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-diff"><b>L3 高级</b><span>算法 · 重构 · 调试</span></div>
+        <div class="mm-arrow">↓</div>
+        <div class="mm-model t1"><b>T1 代码专项</b><span>doubao-seed-2-0-code-preview · qwen3-coder-flash</span></div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-diff"><b>L4 专家</b><span>框架级 · 分布式</span></div>
+        <div class="mm-arrow">↓</div>
+        <div class="mm-model t0"><b>T0 旗舰级</b><span>doubao-seed-2.1-pro · qwen3.8-max</span></div>
+      </div>
+    </div>
+
     <div class="note">当前为「先验规则」（基于官方定价与公开定位推导），全量评测完成后将被实测数据替换——该替换过程即本研究核心成果。</div>
   </div>
 
@@ -238,14 +297,16 @@
   <div class="card">
     <h2>五层回退</h2>
     <div class="desc">首选失败时逐级兜底，保证端到端成功率 ≥ 95%。</div>
-    <table>
-      <tr><th style="width:130px;">层级</th><th style="width:220px;">触发条件</th><th>动作</th></tr>
-      <tr><td class="lv lv-1">L1 质量回退</td><td>代码未过语法 / 单测</td><td>按备选链下一模型重试，携带上次失败信息</td></tr>
-      <tr><td class="lv lv-2">L2 连续失败升级</td><td>连续 2 个模型失败</td><td>跳过排序，直接升旗舰</td></tr>
-      <tr><td class="lv lv-3">L3 平台故障转移</td><td>平台 5xx / 限流 / 超时</td><td>切另一平台同梯队模型</td></tr>
-      <tr><td class="lv lv-3">L4 高负载降级</td><td>并发请求过大</td><td>临时优先响应更快的模型</td></tr>
-      <tr><td class="lv lv-4">L5 预算熔断</td><td>日累计成本到上限</td><td>暂停付费调用，告警等待</td></tr>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <tr><th style="width:130px;">层级</th><th style="width:220px;">触发条件</th><th>动作</th></tr>
+        <tr><td class="lv lv-1">L1 质量回退</td><td>代码未过语法 / 单测</td><td>按备选链下一模型重试，携带上次失败信息</td></tr>
+        <tr><td class="lv lv-2">L2 连续失败升级</td><td>连续 2 个模型失败</td><td>跳过排序，直接升旗舰</td></tr>
+        <tr><td class="lv lv-3">L3 平台故障转移</td><td>平台 5xx / 限流 / 超时</td><td>切另一平台同梯队模型</td></tr>
+        <tr><td class="lv lv-3">L4 高负载降级</td><td>并发请求过大</td><td>临时优先响应更快的模型</td></tr>
+        <tr><td class="lv lv-4">L5 预算熔断</td><td>日累计成本到上限</td><td>暂停付费调用，告警等待</td></tr>
+      </table>
+    </div>
   </div>
 
   <div class="footer">LLM 代码生成能力评估与智能路由研究 · 计划书 v3.1（实测校准版） · 生成于 2026-10-17</div>
