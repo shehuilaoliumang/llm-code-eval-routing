@@ -118,8 +118,8 @@ class TestCodeExtract(unittest.TestCase):
 class TestConfigAndTasks(unittest.TestCase):
     def test_eval_config_loads(self):
         cfg = EvalConfig(load_yaml(os.path.join(ROOT, "config", "eval.yaml")))
-        self.assertEqual(cfg.pass_line("L1"), 60)
-        self.assertEqual(cfg.pass_line("L4"), 70)
+        self.assertEqual(cfg.pass_line("L1"), 85)
+        self.assertEqual(cfg.pass_line("L4"), 85)
         self.assertEqual(cfg.generation["temperature"], 0.2)
 
     def test_seed_tasks_reference_solutions_pass(self):
