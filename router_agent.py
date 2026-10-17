@@ -176,23 +176,24 @@ class RouterAgent:
         self.pass_line = pass_line
         self.budget = budget_yuan
 
-    def classify(self, description: str) -> tuple:
-        """母 Agent：用最便宜的 T3 模型判断难度。返回 (difficulty, confidence)。"""
+    def classify(self, description: str):
+        """母 Agent：用最便宜的 T3 模型判断难度。返回 (difficulty, confidence, cost_yuan, latency)。"""
         resp = self.client.chat(
             platform="aliyun", model="qwen3.7-flash",
             messages=[{"role": "user", "content": CLASSIFY_PROMPT.format(description=description)}],
             temperature=0, max_tokens=64, timeout=15,
             extra_body=MODEL_TABLE["qwen3.7-flash"]["extra_body"],
         )
+        cost = self._cost("qwen3.7-flash", resp.input_tokens, resp.output_tokens)
         if resp.error:
-            return "L2", 0.5  # 分类失败降级为中等难度 + 低置信度
+            return "L2", 0.5, cost, resp.latency  # 分类失败降级为中等难度 + 低置信度
         try:
             data = json.loads(extract_code(resp.content).strip("`").strip())
             d = data.get("difficulty", "L2")
             conf = float(data.get("confidence", 0.5))
-            return (d if d in ("L1", "L2", "L3", "L4") else "L2"), conf
+            return (d if d in ("L1", "L2", "L3", "L4") else "L2"), conf, cost, resp.latency
         except Exception:
-            return "L2", 0.5
+            return "L2", 0.5, cost, resp.latency
 
     def decide(self, difficulty: str, confidence: float) -> List[str]:
         """母 Agent：低置信度升档 + 选首选与备选链"""
@@ -239,7 +240,9 @@ class RouterAgent:
         difficulty = task.get("difficulty")
         confidence = task.get("confidence", 1.0)
         if difficulty is None:
-            difficulty, confidence = self.classify(description)
+            difficulty, confidence, classify_cost, classify_latency = self.classify(description)
+            outcome.total_cost_yuan += classify_cost
+            outcome.total_latency += classify_latency
 
         chain = self.decide(difficulty, confidence)
         outcome = DispatchOutcome(
