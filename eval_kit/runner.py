@@ -5,6 +5,8 @@
 
 import json
 import os
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional
 
 from .clients import DualPlatformClient, MockClient
@@ -161,19 +163,43 @@ class EvaluationRunner:
 
     # ---------- 批量 ----------
     def run(self, tasks: List[Dict], model_ids: List[str],
-            runs: Optional[int] = None, limit: Optional[int] = None) -> List[Dict]:
+            runs: Optional[int] = None, limit: Optional[int] = None,
+            workers: int = 6) -> List[Dict]:
+        """批量执行。workers>1 时并发（记录器/客户端均已线程安全）；
+        并发数受双平台 RPM/TPM 限制，默认 6 路在限流安全区间内。"""
         runs = runs or self.gen["runs_per_task"]
-        rows: List[Dict] = []
         selected = tasks[:limit] if limit else tasks
-        for task in selected:
-            for model_id in model_ids:
-                for run_idx in range(1, runs + 1):
-                    row = self.run_one(task, model_id, run_idx)
-                    rows.append(row)
-                    status = "OK" if not row.get("api_error") else "API_ERR"
-                    print(f"[{status}] {task['task_id']} {model_id} run{run_idx} "
-                          f"质量={row.get('quality_total')} 成本={row.get('cost_yuan')}元")
-        return rows
+        jobs = [(t, m, r) for t in selected
+                for m in model_ids for r in range(1, runs + 1)]
+        total = len(jobs)
+        if total == 0:
+            return []
+        rows: List[Optional[Dict]] = [None] * total
+        print_lock = threading.Lock()
+        done = [0]
+
+        def _work(idx, task, model_id, run_idx):
+            row = self.run_one(task, model_id, run_idx)
+            with print_lock:
+                done[0] += 1
+                status = "OK" if not row.get("api_error") else "API_ERR"
+                print(f"[{done[0]}/{total}] [{status}] {task['task_id']} "
+                      f"{model_id} run{run_idx} 质量={row.get('quality_total')} "
+                      f"成本={row.get('cost_yuan')}元")
+            return idx, row
+
+        if workers <= 1 or total == 1:
+            for i, (t, m, r) in enumerate(jobs):
+                idx, row = _work(i, t, m, r)
+                rows[idx] = row
+        else:
+            with ThreadPoolExecutor(max_workers=workers) as ex:
+                futures = [ex.submit(_work, i, t, m, r)
+                           for i, (t, m, r) in enumerate(jobs)]
+                for fut in as_completed(futures):
+                    idx, row = fut.result()
+                    rows[idx] = row
+        return [r for r in rows if r is not None]
 
 
 def _in_cross_check(task: Dict, model_id: str, run_idx: int) -> bool:

@@ -44,6 +44,7 @@ def main():
     ap.add_argument("--limit", type=int, default=None, help="只跑前 N 题（试跑用）")
     ap.add_argument("--runs", type=int, default=None, help="每题每模型运行次数")
     ap.add_argument("--models-filter", nargs="*", default=None, help="只跑指定模型")
+    ap.add_argument("--workers", type=int, default=6, help="并发线程数（1=串行）")
     ap.add_argument("--no-judge", action="store_true", help="跳过LLM裁判（只跑自动判分）")
     ap.add_argument("--dry-run", action="store_true", help="MockClient 干跑，不调真实API")
     ap.add_argument("--manifest-only", action="store_true", help="只生成 manifest")
@@ -85,8 +86,10 @@ def main():
         runner._maybe_judge = lambda *a, **k: None
 
     print(f"任务数: {len(tasks)} | 模型数: {len(model_ids)} | "
-          f"运行次数: {args.runs or eval_cfg.generation['runs_per_task']}")
-    rows = runner.run(tasks, model_ids, runs=args.runs, limit=args.limit)
+          f"运行次数: {args.runs or eval_cfg.generation['runs_per_task']} | "
+          f"并发: {args.workers}")
+    rows = runner.run(tasks, model_ids, runs=args.runs, limit=args.limit,
+                      workers=args.workers)
     ok = sum(1 for r in rows if not r.get("api_error"))
     print(f"\n完成: {len(rows)} 次生成（成功 {ok}），结果写入 {args.out}")
 
