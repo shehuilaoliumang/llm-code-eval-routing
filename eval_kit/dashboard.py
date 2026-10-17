@@ -135,6 +135,17 @@ def _row_passed(r, pass_line):
     return q >= pass_line.get(r.get("difficulty"), 60)
 
 
+def _split_of(task_id):
+    """从 task_id 推导 dev/holdout 划分（每难度前 6 题为 rule_dev，后 6 为 holdout）。"""
+    if not task_id:
+        return None
+    try:
+        idx = int(task_id.split("-")[1])
+        return "rule_dev" if idx <= 6 else "holdout"
+    except (IndexError, ValueError):
+        return None
+
+
 def cross_check_pairs(rows):
     """裁判 vs 交叉验证的成对样本。"""
     pairs = []
@@ -178,6 +189,9 @@ def build_dashboard_payload(rows, stats, eval_cfg, source_files):
         "rows": [{
             "task_id": r.get("task_id"),
             "difficulty": r.get("difficulty"),
+            "task_type": r.get("task_type"),
+            "split": _split_of(r.get("task_id")),
+            "platform": r.get("platform"),
             "model": short_name(r.get("model")),
             "run": r.get("run"),
             "syntax": r.get("syntax_score"),
@@ -284,7 +298,10 @@ footer{color:var(--sub);font-size:11.5px;text-align:center;margin:24px 0 8px}
   <div class="desc">全量生成记录（含裁判分与阶梯计价成本）。点表头排序，用下拉按难度/模型筛选。<span id="rowsCount"></span></div>
   <div class="filters">
     <label>难度 <select id="fDifficulty"></select></label>
+    <label>题型 <select id="fType"></select></label>
     <label>模型 <select id="fModel"></select></label>
+    <label>平台 <select id="fPlatform"></select></label>
+    <label>划分 <select id="fSplit"></select></label>
   </div>
   <div class="scroll"><table id="tblRows"></table></div>
 </section>
@@ -373,26 +390,38 @@ $("tblDiff").innerHTML = `<tr><th>模型</th>${diffs.map(d=>`<th>${d} 质量</th
 
 // ---- 表3 明细（全量 + 排序 + 筛选） ----
 const rowCols = [
-  ["task_id","任务"],["difficulty","难度"],["model","模型"],["run","run"],
+  ["task_id","任务"],["difficulty","难度"],["task_type","题型"],["split","划分"],["platform","平台"],
+  ["model","模型"],["run","run"],
   ["syntax","语法"],["functional","功能"],["style","规范"],["robustness","健壮"],
   ["quality","综合"],["passed","及格"],["input","输入"],["output","输出"],
   ["cost","成本"],["latency","耗时"],
 ];
-const rowState = { key:"quality", desc:true, diff:"全部", model:"全部" };
+const rowState = { key:"quality", desc:true, diff:"全部", type:"全部", model:"全部", platform:"全部", split:"全部" };
 const allRows = DATA.rows || [];
 
 const diffOpts = ["全部", ...DATA.difficulty_order];
+const typeOpts = ["全部", ...Array.from(new Set(allRows.map(r=>r.task_type).filter(Boolean)))];
 const modelOpts = ["全部", ...DATA.models.map(m=>m.display)];
+const platformOpts = ["全部", ...Array.from(new Set(allRows.map(r=>r.platform).filter(Boolean)))];
+const splitOpts = ["全部", "rule_dev", "holdout"];
 $("fDifficulty").innerHTML = diffOpts.map(o=>`<option${o===rowState.diff?" selected":""}>${o}</option>`).join("");
+$("fType").innerHTML = typeOpts.map(o=>`<option${o===rowState.type?" selected":""}>${o}</option>`).join("");
 $("fModel").innerHTML = modelOpts.map(o=>`<option${o===rowState.model?" selected":""}>${o}</option>`).join("");
+$("fPlatform").innerHTML = platformOpts.map(o=>`<option${o===rowState.platform?" selected":""}>${o}</option>`).join("");
+$("fSplit").innerHTML = splitOpts.map(o=>`<option${o===rowState.split?" selected":""}>${o}</option>`).join("");
 $("fDifficulty").onchange = e => { rowState.diff = e.target.value; renderRows(); };
+$("fType").onchange = e => { rowState.type = e.target.value; renderRows(); };
 $("fModel").onchange = e => { rowState.model = e.target.value; renderRows(); };
+$("fPlatform").onchange = e => { rowState.platform = e.target.value; renderRows(); };
+$("fSplit").onchange = e => { rowState.split = e.target.value; renderRows(); };
 
 function rowCell(r) {
   const ok = r.passed === null || r.passed === undefined ? "—"
     : `<span class="pill ${r.passed?"pass":"fail"}">${r.passed?"是":"否"}</span>`;
   const num = v => (v===null||v===undefined) ? "—" : v;
-  return `<tr><td>${r.task_id}</td><td>${r.difficulty}</td><td>${r.model}</td><td>${r.run}</td>
+  const plat = r.platform === "volcengine" ? "方舟" : r.platform === "aliyun" ? "百炼" : (r.platform || "—");
+  return `<tr><td>${r.task_id}</td><td>${r.difficulty}</td><td>${num(r.task_type)}</td>
+  <td>${r.split==="rule_dev"?"dev":"holdout"}</td><td>${plat}</td><td>${r.model}</td><td>${r.run}</td>
   <td>${num(r.syntax)}</td><td>${num(r.functional)}</td><td>${num(r.style)}</td><td>${num(r.robustness)}</td>
   <td><b>${num(r.quality)}</b></td><td>${ok}</td><td>${num(r.input)}</td><td>${num(r.output)}</td>
   <td>${r.cost==null?"—":"¥"+Number(r.cost).toFixed(4)}</td><td>${r.latency==null?"—":Number(r.latency).toFixed(2)+"s"}</td></tr>`;
@@ -401,7 +430,10 @@ function rowCell(r) {
 function renderRows() {
   let rs = allRows.filter(r =>
     (rowState.diff==="全部" || r.difficulty===rowState.diff) &&
-    (rowState.model==="全部" || r.model===rowState.model));
+    (rowState.type==="全部" || r.task_type===rowState.type) &&
+    (rowState.model==="全部" || r.model===rowState.model) &&
+    (rowState.platform==="全部" || r.platform===rowState.platform) &&
+    (rowState.split==="全部" || r.split===rowState.split));
   if (rowState.key) {
     const k = rowState.key, desc = rowState.desc;
     rs = [...rs].sort((a,b)=>{
