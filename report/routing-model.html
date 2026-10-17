@@ -41,8 +41,8 @@
   .hero .sub { font-size: clamp(12px, 2.5vw, 14px); color: var(--muted); margin-top: 8px; }
   .hero .tag {
     display: inline-block; margin-top: 14px;
-    font-size: 12px; color: var(--purple);
-    background: var(--purple-bg); border: 1px solid #cecbf6;
+    font-size: 12px; color: var(--green);
+    background: var(--green-bg); border: 1px solid #c6ddab;
     border-radius: 20px; padding: 4px 14px;
   }
   .card {
@@ -104,9 +104,9 @@
   .svg-wrap { margin: 8px 0 4px; }
   .svg-wrap svg { width: 100%; height: auto; display: block; }
   .note {
-    font-size: 12px; color: var(--coral);
-    background: var(--coral-bg);
-    border: 1px solid #f5c4b3;
+    font-size: 12px; color: var(--blue);
+    background: var(--blue-bg);
+    border: 1px solid #bcd7ef;
     border-radius: 8px;
     padding: 10px 14px;
     margin-top: 14px;
@@ -155,7 +155,7 @@
   <div class="hero">
     <h1>路由分派模型</h1>
     <div class="sub">LLM 代码生成能力评估与智能路由研究 · 核心方法论</div>
-    <span class="tag">先验版 v1.0 · 待实测数据校准</span>
+    <span class="tag">实测数据版 v1.0 · 1152 次全量评测校准</span>
   </div>
 
   <div class="card">
@@ -165,14 +165,14 @@
     <div class="grid-2">
       <div class="mini">
         <div class="k">第一步 · 质量门槛</div>
-        <div class="formula">S_quality = <span class="hl">0.3</span>×语法 + <span class="hl">0.4</span>×功能 + <span class="hl">0.2</span>×规范 + <span class="hl">0.1</span>×健壮</div>
+        <div class="formula">S_quality = <span class="hl">0.10</span>×语法 + <span class="hl">0.45</span>×功能 + <span class="hl">0.20</span>×规范 + <span class="hl">0.25</span>×健壮</div>
         <div class="weight">
-          <span class="chip"><b>语法 30%</b> 自动</span>
-          <span class="chip"><b>功能 40%</b> 单测</span>
+          <span class="chip"><b>语法 10%</b> 自动</span>
+          <span class="chip"><b>功能 45%</b> 单测</span>
           <span class="chip"><b>规范 20%</b> 裁判</span>
-          <span class="chip"><b>健壮 10%</b> 裁判</span>
+          <span class="chip"><b>健壮 25%</b> 裁判</span>
         </div>
-        <div class="desc" style="margin:12px 0 0;">及格线：L1/L2 = 60 · L3 = 65 · L4 = 70，未达标即淘汰。</div>
+        <div class="desc" style="margin:12px 0 0;">及格线：L1~L4 统一 = 85，未达标即淘汰（实测质量分布的自然断裂点）。</div>
       </div>
       <div class="mini">
         <div class="k">第二步 · 性价比排序</div>
@@ -187,13 +187,13 @@
   </div>
 
   <div class="card">
-    <h2>难度 → 档位分派</h2>
-    <div class="desc">每档双平台互备（火山方舟 / 阿里云百炼各一款），单平台故障可切换。</div>
+    <h2>难度 → 首选模型分派（实测）</h2>
+    <div class="desc">基于 1152 次实测：中低难度（L1~L3）由 qwen3.7-flash 一个轻量模型通吃，L4 是唯一需要旗舰的难度。</div>
 
     <div class="svg-wrap">
-      <svg viewBox="0 0 900 396" role="img" xmlns="http://www.w3.org/2000/svg">
-        <title>难度到模型档位的分派映射</title>
-        <desc>L1入门交给T3轻量，L2进阶交给T2均衡，L3高级交给T1代码专项，L4专家交给T0旗舰</desc>
+      <svg viewBox="0 0 900 430" role="img" xmlns="http://www.w3.org/2000/svg">
+        <title>难度到首选模型的实测分派映射</title>
+        <desc>L1入门、L2进阶、L3高级实测均由 qwen3.7-flash 首选；L4专家由 qwen3.8-max 旗舰首选</desc>
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -201,47 +201,51 @@
         </defs>
 
         <g>
-          <rect x="40" y="40" width="160" height="60" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
-          <text x="120" y="63" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L1 入门</text>
-          <text x="120" y="84" text-anchor="middle" font-size="12" fill="#5f5e5a">单函数 · 短代码</text>
-          <line x1="202" y1="70" x2="416" y2="70" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
-          <rect x="420" y="40" width="440" height="60" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
-          <text x="640" y="63" text-anchor="middle" font-size="15" font-weight="600" fill="#27500a">T3 轻量级</text>
-          <text x="640" y="84" text-anchor="middle" font-size="12.5" fill="#3b6d11">doubao-seed-2.0-mini · qwen3.7-flash</text>
+          <rect x="40" y="36" width="170" height="72" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
+          <text x="125" y="60" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L1 入门</text>
+          <text x="125" y="82" text-anchor="middle" font-size="12" fill="#5f5e5a">单函数 · 短代码</text>
+          <line x1="212" y1="72" x2="414" y2="72" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <rect x="418" y="36" width="442" height="72" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+          <text x="639" y="58" text-anchor="middle" font-size="14.5" font-weight="600" fill="#27500a">T3 轻量 · qwen3.7-flash</text>
+          <text x="639" y="78" text-anchor="middle" font-size="12" fill="#3b6d11">实测质量 93.2 · 成本 ¥0.0003/次</text>
+          <text x="639" y="96" text-anchor="middle" font-size="11" fill="#6b6f7a">备选 doubao-seed-2.0-mini → doubao-seed-2.1-lite</text>
         </g>
 
         <g>
-          <rect x="40" y="120" width="160" height="60" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
-          <text x="120" y="143" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L2 进阶</text>
-          <text x="120" y="164" text-anchor="middle" font-size="12" fill="#5f5e5a">多函数 · 完整类</text>
-          <line x1="202" y1="150" x2="416" y2="150" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
-          <rect x="420" y="120" width="440" height="60" rx="10" fill="#FAEEDA" stroke="#854F0B" stroke-width="1"/>
-          <text x="640" y="143" text-anchor="middle" font-size="15" font-weight="600" fill="#633806">T2 均衡级</text>
-          <text x="640" y="164" text-anchor="middle" font-size="12.5" fill="#854f0b">doubao-seed-2.1-lite · qwen3.7-plus</text>
+          <rect x="40" y="126" width="170" height="72" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
+          <text x="125" y="150" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L2 进阶</text>
+          <text x="125" y="172" text-anchor="middle" font-size="12" fill="#5f5e5a">多函数 · 完整类</text>
+          <line x1="212" y1="162" x2="414" y2="162" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <rect x="418" y="126" width="442" height="72" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+          <text x="639" y="148" text-anchor="middle" font-size="14.5" font-weight="600" fill="#27500a">T3 轻量 · qwen3.7-flash</text>
+          <text x="639" y="168" text-anchor="middle" font-size="12" fill="#3b6d11">实测质量 93.3 · 成本 ¥0.0004/次</text>
+          <text x="639" y="186" text-anchor="middle" font-size="11" fill="#6b6f7a">备选 doubao-seed-2.0-mini → doubao-seed-2.1-lite</text>
         </g>
 
         <g>
-          <rect x="40" y="200" width="160" height="60" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
-          <text x="120" y="223" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L3 高级</text>
-          <text x="120" y="244" text-anchor="middle" font-size="12" fill="#5f5e5a">算法 · 重构 · 调试</text>
-          <line x1="202" y1="230" x2="416" y2="230" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
-          <rect x="420" y="200" width="440" height="60" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
-          <text x="640" y="223" text-anchor="middle" font-size="15" font-weight="600" fill="#0c447c">T1 代码专项</text>
-          <text x="640" y="244" text-anchor="middle" font-size="12.5" fill="#185fa5">doubao-seed-2-0-code-preview · qwen3-coder-flash</text>
+          <rect x="40" y="216" width="170" height="72" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
+          <text x="125" y="240" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L3 高级</text>
+          <text x="125" y="262" text-anchor="middle" font-size="12" fill="#5f5e5a">算法 · 重构 · 调试</text>
+          <line x1="212" y1="252" x2="414" y2="252" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <rect x="418" y="216" width="442" height="72" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+          <text x="639" y="238" text-anchor="middle" font-size="14.5" font-weight="600" fill="#27500a">T3 轻量 · qwen3.7-flash</text>
+          <text x="639" y="258" text-anchor="middle" font-size="12" fill="#3b6d11">实测质量 92.2 · 成本 ¥0.0005/次</text>
+          <text x="639" y="276" text-anchor="middle" font-size="11" fill="#6b6f7a">备选 doubao-seed-2.1-lite → qwen3-coder-flash</text>
         </g>
 
         <g>
-          <rect x="40" y="280" width="160" height="60" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
-          <text x="120" y="303" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L4 专家</text>
-          <text x="120" y="324" text-anchor="middle" font-size="12" fill="#5f5e5a">框架级 · 分布式</text>
-          <line x1="202" y1="310" x2="416" y2="310" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
-          <rect x="420" y="280" width="440" height="60" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
-          <text x="640" y="303" text-anchor="middle" font-size="15" font-weight="600" fill="#3c3489">T0 旗舰级</text>
-          <text x="640" y="324" text-anchor="middle" font-size="12.5" fill="#534ab7">doubao-seed-2.1-pro · qwen3.8-max</text>
+          <rect x="40" y="306" width="170" height="72" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
+          <text x="125" y="330" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L4 专家</text>
+          <text x="125" y="352" text-anchor="middle" font-size="12" fill="#5f5e5a">框架级 · 疑难算法</text>
+          <line x1="212" y1="342" x2="414" y2="342" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <rect x="418" y="306" width="442" height="72" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+          <text x="639" y="328" text-anchor="middle" font-size="14.5" font-weight="600" fill="#3c3489">T0 旗舰 · qwen3.8-max</text>
+          <text x="639" y="348" text-anchor="middle" font-size="12" fill="#534ab7">实测质量 92.3 · 成本 ¥0.0209/次</text>
+          <text x="639" y="366" text-anchor="middle" font-size="11" fill="#6b6f7a">备选 doubao-seed-2.1-pro → doubao-seed-2.1-lite</text>
         </g>
 
-        <text x="40" y="372" font-size="12" fill="#5f5e5a">单次成本随档位递升：T3 ≈ 0.001~0.002 元 → T2 ≈ 0.003~0.009 元 → T1 ≈ 0.005~0.014 元 → T0 ≈ 0.023~0.047 元</text>
-        <text x="40" y="392" font-size="12" fill="#5f5e5a">低置信度保守策略：分类置信度 &lt; 0.7 时难度升一档重走筛选排序</text>
+        <text x="40" y="406" font-size="12" fill="#5f5e5a">实测单次成本：flash ¥0.0005 · mini ¥0.0008 · lite ¥0.0015 · coder-flash ¥0.0025 · pro ¥0.0167 · 8-max ¥0.0209</text>
+        <text x="40" y="424" font-size="12" fill="#5f5e5a">低置信度保守策略：分类置信度 &lt; 0.7 时难度升一档重走筛选排序；实时敏感切换最低延迟 mini(3.1s)</text>
       </svg>
     </div>
 
@@ -249,26 +253,26 @@
       <div class="mm-item">
         <div class="mm-diff"><b>L1 入门</b><span>单函数 · 短代码</span></div>
         <div class="mm-arrow">↓</div>
-        <div class="mm-model t3"><b>T3 轻量级</b><span>doubao-seed-2.0-mini · qwen3.7-flash</span></div>
+        <div class="mm-model t3"><b>T3 · qwen3.7-flash</b><span>质量 93.2 · ¥0.0003 · 备选 mini → lite</span></div>
       </div>
       <div class="mm-item">
         <div class="mm-diff"><b>L2 进阶</b><span>多函数 · 完整类</span></div>
         <div class="mm-arrow">↓</div>
-        <div class="mm-model t2"><b>T2 均衡级</b><span>doubao-seed-2.1-lite · qwen3.7-plus</span></div>
+        <div class="mm-model t3"><b>T3 · qwen3.7-flash</b><span>质量 93.3 · ¥0.0004 · 备选 mini → lite</span></div>
       </div>
       <div class="mm-item">
         <div class="mm-diff"><b>L3 高级</b><span>算法 · 重构 · 调试</span></div>
         <div class="mm-arrow">↓</div>
-        <div class="mm-model t1"><b>T1 代码专项</b><span>doubao-seed-2-0-code-preview · qwen3-coder-flash</span></div>
+        <div class="mm-model t3"><b>T3 · qwen3.7-flash</b><span>质量 92.2 · ¥0.0005 · 备选 lite → coder-flash</span></div>
       </div>
       <div class="mm-item">
-        <div class="mm-diff"><b>L4 专家</b><span>框架级 · 分布式</span></div>
+        <div class="mm-diff"><b>L4 专家</b><span>框架级 · 疑难算法</span></div>
         <div class="mm-arrow">↓</div>
-        <div class="mm-model t0"><b>T0 旗舰级</b><span>doubao-seed-2.1-pro · qwen3.8-max</span></div>
+        <div class="mm-model t0"><b>T0 · qwen3.8-max</b><span>质量 92.3 · ¥0.0209 · 备选 pro → lite</span></div>
       </div>
     </div>
 
-    <div class="note">当前为「先验规则」（基于官方定价与公开定位推导），全量评测完成后将被实测数据替换——该替换过程即本研究核心成果。</div>
+    <div class="note">本页已用 1152 次全量实测数据替换先验规则。关键变化：① 中低难度（L1~L3）实测由一个轻量模型 qwen3.7-flash 通吃（S_value 三个难度全部第一），先验的「L2→T2 / L3→T1」阶梯分档被推翻；② L4 仍唯一需要旗舰，且不套性价比公式——轻量模型虽过线但功能分与旗舰有实质差距，专家级代码「写错一处」的返工成本远高于价差。详细数据见《研究报告.md》与 report/dashboard.html。</div>
   </div>
 
   <div class="card">
@@ -281,11 +285,11 @@
       </div>
       <div class="mini">
         <div class="k">② 候选筛选</div>
-        <div class="v">硬约束过滤 → 质量门槛（S_quality ≥ 及格线）</div>
+        <div class="v">硬约束过滤 → 质量门槛（S_quality ≥ 85）</div>
       </div>
       <div class="mini">
         <div class="k">③ 性价比排序</div>
-        <div class="v">S_value 从高到低排，确定首选与备选链</div>
+        <div class="v">S_value 从高到低排，确定首选与备选链（L4 直接旗舰）</div>
       </div>
       <div class="mini">
         <div class="k">④ 分派执行</div>
@@ -301,7 +305,7 @@
       <table>
         <tr><th style="width:130px;">层级</th><th style="width:220px;">触发条件</th><th>动作</th></tr>
         <tr><td class="lv lv-1">L1 质量回退</td><td>代码未过语法 / 单测</td><td>按备选链下一模型重试，携带上次失败信息</td></tr>
-        <tr><td class="lv lv-2">L2 连续失败升级</td><td>连续 2 个模型失败</td><td>跳过排序，直接升旗舰</td></tr>
+        <tr><td class="lv lv-2">L2 连续失败升级</td><td>连续 2 个模型失败</td><td>跳过排序，直接升旗舰（qwen3.8-max / pro）</td></tr>
         <tr><td class="lv lv-3">L3 平台故障转移</td><td>平台 5xx / 限流 / 超时</td><td>切另一平台同梯队模型</td></tr>
         <tr><td class="lv lv-3">L4 高负载降级</td><td>并发请求过大</td><td>临时优先响应更快的模型</td></tr>
         <tr><td class="lv lv-4">L5 预算熔断</td><td>日累计成本到上限</td><td>暂停付费调用，告警等待</td></tr>
@@ -309,7 +313,7 @@
     </div>
   </div>
 
-  <div class="footer">LLM 代码生成能力评估与智能路由研究 · 计划书 v3.1（实测校准版） · 生成于 2026-10-17</div>
+  <div class="footer">LLM 代码生成能力评估与智能路由研究 · 计划书 v3.1（实测校准版） · 实测数据版 v1.0 · 生成于 2026-10-17</div>
 
 </div>
 </body>
