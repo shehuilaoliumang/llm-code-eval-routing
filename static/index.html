@@ -46,7 +46,15 @@
   .chip-area {
     min-height: 40px; border: 1px dashed var(--border); border-radius: 10px;
     padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; background: #fbfbfe;
+    align-content: flex-start;
   }
+  .chip-area.scroll {
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .chip-area::-webkit-scrollbar { width: 8px; }
+  .chip-area::-webkit-scrollbar-thumb { background: #d0d3dd; border-radius: 4px; }
+  .chip-area::-webkit-scrollbar-thumb:hover { background: #b8bcc9; }
   .chip-area.empty::after {
     content: "（空）"; color: var(--muted); font-size: 12px; align-self: center;
   }
@@ -110,9 +118,9 @@
   <div class="card" id="optionalCard" style="display:none;">
     <h2>② 可选模型（点击加入上方）</h2>
     <div class="group-title">火山方舟</div>
-    <div class="chip-area" id="volcArea"></div>
+    <div class="chip-area scroll" id="volcArea"></div>
     <div class="group-title">阿里云百炼</div>
-    <div class="chip-area" id="aliArea"></div>
+    <div class="chip-area scroll" id="aliArea"></div>
   </div>
 
   <div class="card">
