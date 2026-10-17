@@ -19,6 +19,7 @@ import asyncio
 import json
 import os
 import queue
+import re
 import sys
 import threading
 import uuid
@@ -82,15 +83,46 @@ class TestRequest(BaseModel):
     workers: int = Field(default=5, ge=1, le=10, description="连通测试并发数")
 
 
-# 名称预过滤：排除明显非代码/文本的模型（语音/图像/向量/重排）
-_EXCLUDE_KEYWORDS = ("speech", "asr", "tts", "voice", "audio",
-                     "image", "vision", "ocr", "video",
-                     "embedding", "embed", "rerank")
+# 代码/通用对话模型白名单关键词（连通测试默认只针对主流代码模型）
+# 实测：models.list 含大量图像/视频/3D/语音/开源小模型/第三方代理/历史版本，
+# 黑名单无法穷举（seedream=图像、seedance=舞蹈、wan=视频等专有名词），改用白名单。
+_MAINSTREAM_KEYWORDS = (
+    "doubao-seed-2", "doubao-seed-1-8",       # 最新豆包通用
+    "deepseek-v4", "deepseek-r1", "deepseek-v3",  # DeepSeek 推理/通用
+    "qwen3.7", "qwen3.8", "qwen-max", "qwen-plus", "qwen-flash",  # 通义主线
+    "qwen-coder", "qwen-turbo",
+    "glm-5", "kimi-k2", "kimi-k3",             # 智谱/月之暗面最新
+)
+_MULTIMODAL_KEYWORDS = ("omni", "realtime", "s2s", "vl")  # 多模态/实时语音/视觉
 
 
 def _is_code_candidate(model_id: str) -> bool:
+    """白名单判定：只保留当前主流代码/通用对话模型。"""
     low = model_id.lower()
-    return not any(k in low for k in _EXCLUDE_KEYWORDS)
+    if "/" in model_id:  # 第三方代理接入点（siliconflow/ vanchin/ 等）
+        return False
+    if not any(k in low for k in _MAINSTREAM_KEYWORDS):
+        return False
+    if any(k in low for k in _MULTIMODAL_KEYWORDS):
+        return False
+    return True
+
+
+def _series_name(model_id: str) -> str:
+    """模型系列名：去掉末尾日期后缀（-YYMMDD / -YYYYMMDD / -YYYY-MM-DD）。"""
+    s = re.sub(r"-\d{6,8}$", "", model_id.lower())
+    s = re.sub(r"-\d{4}-\d{2}-\d{2}$", "", s)
+    return s
+
+
+def _dedup(models) -> list:
+    """同系列去重，只保留版本号最新（字典序最大）的一个。"""
+    by = {}
+    for m in models:
+        s = _series_name(m)
+        if s not in by or m > by[s]:
+            by[s] = m
+    return sorted(by.values())
 
 
 class AppState:
@@ -112,8 +144,10 @@ class AppState:
     def list_platform_models(self, refresh: bool = False):
         """动态查询两平台所有可用模型（models.list，免费不耗 token）。
 
-        返回 {"volcengine": [模型ID...], "aliyun": [...],
-              "verified_ids": [已验证候选...], "errors": [...]}
+        加载时即做名称粗筛选（零成本排除音视频/向量/重排等明显不适用的模型），
+        连通测试只针对粗筛后的代码候选，大幅减少待测数量。
+        返回 {"volcengine": [...], "aliyun": [...], "verified_ids": [...],
+              "filtered": {平台: 粗筛掉的数量}, "errors": [...]}
         带 5 分钟内存缓存；单平台查询失败不影响另一平台。
         """
         import time
@@ -125,7 +159,8 @@ class AppState:
         from openai import OpenAI
 
         result = {"volcengine": [], "aliyun": [],
-                  "verified_ids": self.candidate_models(), "errors": []}
+                  "verified_ids": self.candidate_models(), "errors": [],
+                  "filtered": {}}
 
         # 火山方舟
         key = os.environ.get("VOLCENGINE_API_KEY")
@@ -133,7 +168,9 @@ class AppState:
             try:
                 base = self.models_cfg["platforms"]["volcengine"]["base_url"]
                 c = OpenAI(api_key=key, base_url=base, timeout=15)
-                result["volcengine"] = sorted(m.id for m in c.models.list().data)
+                all_volc = sorted(m.id for m in c.models.list().data)
+                result["volcengine"] = _dedup([m for m in all_volc if _is_code_candidate(m)])
+                result["filtered"]["volcengine"] = len(all_volc) - len(result["volcengine"])
             except Exception as e:  # noqa: BLE001
                 result["errors"].append(f"方舟: {type(e).__name__}")
         else:
@@ -145,7 +182,9 @@ class AppState:
             try:
                 base = self.models_cfg["platforms"]["aliyun"]["base_url"]
                 c = OpenAI(api_key=key, base_url=base, timeout=15)
-                result["aliyun"] = sorted(m.id for m in c.models.list().data)
+                all_ali = sorted(m.id for m in c.models.list().data)
+                result["aliyun"] = _dedup([m for m in all_ali if _is_code_candidate(m)])
+                result["filtered"]["aliyun"] = len(all_ali) - len(result["aliyun"])
             except Exception as e:  # noqa: BLE001
                 result["errors"].append(f"百炼: {type(e).__name__}")
         else:
@@ -190,11 +229,11 @@ class AppState:
             return {"thinking": {"type": "disabled"}}
         return {"chat_template_kwargs": {"enable_thinking": False}}
 
-    def test_connectivity_stream(self, models: list, workers: int = 8):
+    def test_connectivity_stream(self, models: list, workers: int = 10):
         """流式连通测试：名称预过滤后并发发最小调用，边测边 yield 进度。
 
         每条进度：{"done": X, "total": N, "id": ..., "available": bool, "error": ...}
-        超时降到 8s（连通性无需久等），并发默认 8 路。
+        超时降到 5s（连通性无需久等），并发默认 10 路。
         """
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -204,14 +243,15 @@ class AppState:
         def _test_one(m):
             mid, platform = m["id"], m["platform"]
             try:
-                resp = self.client.chat(
-                    platform=platform, model=mid,
+                # 连通测试用底层客户端单次调用（不走 chat 的指数退避重试），
+                # 否则不可用模型超时会重试 5 次、单个耗时 30~90 秒，拖垮整体
+                oai = self.client._get_openai_client(platform)
+                oai.chat.completions.create(
+                    model=mid,
                     messages=[{"role": "user", "content": "hi"}],
-                    max_tokens=8, timeout=8,
+                    max_tokens=8, timeout=5,
                     extra_body=self._disable_thinking_for(platform),
                 )
-                if resp.error:
-                    return mid, {"available": False, "error": resp.error[:100]}
                 return mid, {"available": True, "error": ""}
             except Exception as e:  # noqa: BLE001
                 return mid, {"available": False,

@@ -252,7 +252,9 @@ async function loadPlatformModels() {
   addGroup('aliyun', d.aliyun);
   $('optionalCard').style.display = 'block';
   renderOptional();
-  $('platformInfo').textContent = `已加载 ${added} 个平台模型（点「连通测试」过滤不可用的）`;
+  const f = d.filtered || {};
+  const filteredOut = (f.volcengine || 0) + (f.aliyun || 0);
+  $('platformInfo').textContent = `已加载 ${added} 个主流代码模型（筛选掉 ${filteredOut} 个非代码/历史版本）；点「连通测试」过滤不可用的`;
   if (d.errors && d.errors.length) {
     $('platformInfo').textContent += ' | ' + d.errors.join('；');
   }
@@ -276,7 +278,7 @@ async function testConnectivity() {
   try {
     const resp = await fetch('/api/models/test', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ models, workers: 8 }),
+      body: JSON.stringify({ models, workers: 10 }),
     });
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
