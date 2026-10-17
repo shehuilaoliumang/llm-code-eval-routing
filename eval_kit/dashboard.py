@@ -127,6 +127,14 @@ def _pass_rate(rows, pass_line):
     return round(100.0 * passed / len(judged), 1)
 
 
+def _row_passed(r, pass_line):
+    """单条记录是否及格（未评分返回 None）。"""
+    q = r.get("quality_total")
+    if q is None:
+        return None
+    return q >= pass_line.get(r.get("difficulty"), 60)
+
+
 def cross_check_pairs(rows):
     """裁判 vs 交叉验证的成对样本。"""
     pairs = []
@@ -166,6 +174,23 @@ def build_dashboard_payload(rows, stats, eval_cfg, source_files):
         "models": [{"id": m, **stats[m]} for m in models],
         "difficulty_order": DIFFICULTIES,
         "cross_check": cross_check_pairs(rows),
+        # 全量明细（前端排序/筛选用），不再截断为最近 200 条
+        "rows": [{
+            "task_id": r.get("task_id"),
+            "difficulty": r.get("difficulty"),
+            "model": short_name(r.get("model")),
+            "run": r.get("run"),
+            "syntax": r.get("syntax_score"),
+            "functional": r.get("functional_score"),
+            "style": r.get("style_score"),
+            "robustness": r.get("robustness_score"),
+            "quality": r.get("quality_total"),
+            "passed": _row_passed(r, eval_cfg.scoring["pass_line"]),
+            "input": r.get("input_tokens"),
+            "output": r.get("output_tokens"),
+            "cost": r.get("cost_yuan"),
+            "latency": r.get("latency_seconds"),
+        } for r in rows],
         "sources": [{"file": os.path.basename(p),
                      "records": sum(1 for _ in open(p, encoding="utf-8"))}
                     for p in source_files if os.path.exists(p)],
@@ -210,6 +235,8 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-size:12.5
 .scroll{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:8px}
 .tag{font-size:11px;color:var(--sub);background:#f3f4f6;border-radius:5px;padding:1px 6px;margin-left:6px}
 .note{font-size:12px;color:var(--sub);margin-top:10px}
+.filters{display:flex;gap:16px;margin-bottom:10px;font-size:12.5px;color:var(--sub)}
+.filters select{padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;margin-left:6px;background:#fff}
 footer{color:var(--sub);font-size:11.5px;text-align:center;margin:24px 0 8px}
 .big{font-size:26px}
 </style>
@@ -254,7 +281,11 @@ footer{color:var(--sub);font-size:11.5px;text-align:center;margin:24px 0 8px}
   <div class="scroll"><table id="tblDiff"></table></div>
 </section>
 <section><h2>明细记录</h2>
-  <div class="desc">最近 200 条生成记录（含裁判分与阶梯计价成本）。</div>
+  <div class="desc">全量生成记录（含裁判分与阶梯计价成本）。点表头排序，用下拉按难度/模型筛选。<span id="rowsCount"></span></div>
+  <div class="filters">
+    <label>难度 <select id="fDifficulty"></select></label>
+    <label>模型 <select id="fModel"></select></label>
+  </div>
   <div class="scroll"><table id="tblRows"></table></div>
 </section>
 <footer id="foot"></footer>
@@ -340,33 +371,66 @@ $("tblDiff").innerHTML = `<tr><th>模型</th>${diffs.map(d=>`<th>${d} 质量</th
     return b ? `<td>${fmt(b.avg_quality)}</td><td style="${heat(b.pass_rate)}">${fmt(b.pass_rate,0)}%</td><td>¥${fmt(b.avg_cost,4)}</td>`
              : "<td>—</td><td>—</td><td>—</td>";}).join("") + "</tr>").join("");
 
-// ---- 表3 明细（ROWS 由 Python 注入） ----
-$("tblRows").innerHTML = `<tr><th>任务</th><th>难度</th><th>模型</th><th>run</th><th>语法</th><th>功能</th><th>规范</th><th>健壮</th><th>综合</th><th>及格</th><th>输入</th><th>输出</th><th>成本</th><th>耗时</th></tr>` + __ROWS__;
+// ---- 表3 明细（全量 + 排序 + 筛选） ----
+const rowCols = [
+  ["task_id","任务"],["difficulty","难度"],["model","模型"],["run","run"],
+  ["syntax","语法"],["functional","功能"],["style","规范"],["robustness","健壮"],
+  ["quality","综合"],["passed","及格"],["input","输入"],["output","输出"],
+  ["cost","成本"],["latency","耗时"],
+];
+const rowState = { key:"quality", desc:true, diff:"全部", model:"全部" };
+const allRows = DATA.rows || [];
+
+const diffOpts = ["全部", ...DATA.difficulty_order];
+const modelOpts = ["全部", ...DATA.models.map(m=>m.display)];
+$("fDifficulty").innerHTML = diffOpts.map(o=>`<option${o===rowState.diff?" selected":""}>${o}</option>`).join("");
+$("fModel").innerHTML = modelOpts.map(o=>`<option${o===rowState.model?" selected":""}>${o}</option>`).join("");
+$("fDifficulty").onchange = e => { rowState.diff = e.target.value; renderRows(); };
+$("fModel").onchange = e => { rowState.model = e.target.value; renderRows(); };
+
+function rowCell(r) {
+  const ok = r.passed === null || r.passed === undefined ? "—"
+    : `<span class="pill ${r.passed?"pass":"fail"}">${r.passed?"是":"否"}</span>`;
+  const num = v => (v===null||v===undefined) ? "—" : v;
+  return `<tr><td>${r.task_id}</td><td>${r.difficulty}</td><td>${r.model}</td><td>${r.run}</td>
+  <td>${num(r.syntax)}</td><td>${num(r.functional)}</td><td>${num(r.style)}</td><td>${num(r.robustness)}</td>
+  <td><b>${num(r.quality)}</b></td><td>${ok}</td><td>${num(r.input)}</td><td>${num(r.output)}</td>
+  <td>${r.cost==null?"—":"¥"+Number(r.cost).toFixed(4)}</td><td>${r.latency==null?"—":Number(r.latency).toFixed(2)+"s"}</td></tr>`;
+}
+
+function renderRows() {
+  let rs = allRows.filter(r =>
+    (rowState.diff==="全部" || r.difficulty===rowState.diff) &&
+    (rowState.model==="全部" || r.model===rowState.model));
+  if (rowState.key) {
+    const k = rowState.key, desc = rowState.desc;
+    rs = [...rs].sort((a,b)=>{
+      const av=a[k], bv=b[k];
+      const na = (av===null||av===undefined) ? -Infinity : av;
+      const nb = (bv===null||bv===undefined) ? -Infinity : bv;
+      let cmp = (typeof na==="string") ? String(na).localeCompare(String(nb)) : (na-nb);
+      return desc ? -cmp : cmp;
+    });
+  }
+  $("rowsCount").textContent = ` — 显示 ${rs.length}/${allRows.length} 条`;
+  const heads = rowCols.map(([k,label])=>{
+    const arrow = rowState.key===k ? (rowState.desc?" ▲":" ▼") : "";
+    return `<th style="cursor:pointer" onclick="sortRows('${k}')">${label}${arrow}</th>`;
+  }).join("");
+  $("tblRows").innerHTML = `<tr>${heads}</tr>` + rs.map(rowCell).join("");
+}
+function sortRows(k) {
+  if (rowState.key === k) { rowState.desc = !rowState.desc; }
+  else { rowState.key = k; rowState.desc = true; }
+  renderRows();
+}
+renderRows();
 
 $("foot").textContent = `LLM代码生成能力评估与智能路由研究 · 数据源：${DATA.sources.map(s=>s.file+"("+s.records+")").join(" , ")} · 全部记录可依 manifest 复现`;
 </script>
 </body>
 </html>
 """
-
-
-def _rows_html(rows):
-    def cell(r):
-        q = r.get("quality_total")
-        ok = "—" if q is None else ("是" if q >= 60 else "否")
-        return (f"<tr><td>{r.get('task_id','')}</td><td>{r.get('difficulty','')}</td>"
-                f"<td>{short_name(r.get('model',''))}</td><td>{r.get('run','')}</td>"
-                f"<td>{fmt_or_dash(r.get('syntax_score'))}</td><td>{fmt_or_dash(r.get('functional_score'))}</td>"
-                f"<td>{fmt_or_dash(r.get('style_score'))}</td><td>{fmt_or_dash(r.get('robustness_score'))}</td>"
-                f"<td><b>{fmt_or_dash(q)}</b></td><td>{ok}</td>"
-                f"<td>{r.get('input_tokens','')}</td><td>{r.get('output_tokens','')}</td>"
-                f"<td>¥{r.get('cost_yuan',0)}</td><td>{r.get('latency_seconds','')}s</td></tr>")
-    recent = sorted(rows, key=lambda r: r.get("recorded_at", ""), reverse=True)[:200]
-    return "".join(cell(r) for r in recent)
-
-
-def fmt_or_dash(v):
-    return "—" if v is None else v
 
 
 def generate_dashboard(rows, eval_cfg, source_files, chartjs_path, out_path):
@@ -376,10 +440,7 @@ def generate_dashboard(rows, eval_cfg, source_files, chartjs_path, out_path):
         chartjs = f.read()
     html = (HTML_TEMPLATE
             .replace("__CHARTJS__", chartjs)
-            .replace("__DATA__", json.dumps(payload, ensure_ascii=False))
-            # __ROWS__ 位于 JS 表达式 `表头` + __ROWS__ 中，必须以 JS 字符串字面量注入，
-            # 否则裸 <tr> 标签会造成 SyntaxError，整个渲染脚本失效（图表全空）
-            .replace("__ROWS__", json.dumps(_rows_html(rows))))
+            .replace("__DATA__", json.dumps(payload, ensure_ascii=False)))
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
     return payload, out_path
