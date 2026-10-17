@@ -33,19 +33,21 @@
 ├── assets/chart.umd.min.js  # 图表库（本地化，仪表盘离线可用）
 ├── report/                  # 产物：dashboard.html（数据仪表盘）、routing-model.html（方法论展示）
 ├── tests/                   # 本地单元测试（21项，无需API key）
-├── build_tasks.py           # 48题构建器（LLM 编辑 + 三道质量门）
-├── fill_tasks.py            # 补齐缺失题（人工编辑通道，共用同一套质量门）
-├── revise_tasks.py          # 质量审计后的修正（去重/去退化/消重名）
-├── upgrade_tasks.py         # L1 题目升级（v2→v3 第一步）
-├── upgrade23.py             # L2/L3 题目升级
-├── upgrade_l4.py            # L4 题目升级
 ├── run_eval.py              # 评测 CLI 入口
 ├── make_dashboard.py        # 仪表盘 CLI 入口
-├── replay_route.py          # 离线回放实验（E1~E3 + M1~M7 指标 + 敏感性分析，零成本）
+├── replay_route.py          # 离线回放实验（E1~E3 + M1~M7 + 敏感性分析，零成本）
 ├── router_agent.py          # 多模型路由原型（母/子 Agent 运行时，复用 eval_kit）
-├── check_volcengine.py      # 方舟 Key/模型可用性核实脚本
-├── check_aliyun.py          # 百炼 Key/模型可用性核实脚本
+├── web_server.py            # 实时可视化 Web 服务（FastAPI + SSE 进度推送）
+├── static/index.html        # 实时面板前端（穿梭框选模型 + 连通测试 + 实时进度）
 ├── tools/verify_dashboard.js # 仪表盘渲染 JS 回归验证（Node 执行）
+├── build_tasks.py           # ┐
+├── fill_tasks.py            # │ 题目构建链（一次性脚本，测试集已定稿为 tasks_v3.json）
+├── revise_tasks.py          # │ build→fill→revise→upgrade×3，质量门共用
+├── upgrade_tasks.py         # │
+├── upgrade23.py             # │
+├── upgrade_l4.py            # ┘
+├── check_volcengine.py      # ┐ 双平台 Key/模型可用性核实（一次性）
+├── check_aliyun.py          # ┘
 ├── .env.example             # API Key 环境变量模板
 └── requirements.txt
 ```
@@ -129,6 +131,7 @@ output_tokens / input_tier / cost_yuan / latency_seconds / code / test_details`�
 - [x] 路由 Skill 数据层升级为实测版 + 研究报告撰写完成
 - [x] **路由验证与假设检验**：离线回放实验（E1~E3）+ M1~M7 指标 + H1~H5 假设验证 + 敏感性分析（`replay_route.py`，零成本；结论：实测规则省 53%~62%、非劣效成立、H2/H3/H5 被证伪）
 - [x] **路由原型**：`router_agent.py`（母/子 Agent 运行时，复用 eval_kit）；真实 smoke 验证通过（L1→flash、L4→旗舰、分类器均正确）
+- [x] **实时可视化**：`web_server.py`（FastAPI 常驻服务 + SSE 实时进度）+ `static/index.html`（穿梭框选模型、动态加载/连通测试平台全部模型、实时评估进度）
 
 ## 研究边界（重要）
 

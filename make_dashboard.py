@@ -3,7 +3,7 @@
 
 示例：
     python make_dashboard.py                          # 汇总全部试跑/评测结果
-    python make_dashboard.py --tag v1                 # 只汇总指定 tag
+    python make_dashboard.py --tag v3                 # 只汇总指定 tag（如 v3full）
     python make_dashboard.py --out dashboard.html     # 指定输出（默认 report/dashboard.html）
 
 产物为单文件 HTML（数据与图表库全部内联），双击即可在浏览器打开，无需服务器、无需联网。
