@@ -117,6 +117,7 @@
 
   <div class="card" id="optionalCard" style="display:none;">
     <h2>② 可选模型（点击加入上方）</h2>
+    <div class="progress-bar" id="testBar" style="display:none;"><div class="fill" id="testFill"></div></div>
     <div class="group-title">火山方舟</div>
     <div class="chip-area scroll" id="volcArea"></div>
     <div class="group-title">阿里云百炼</div>
@@ -262,22 +263,36 @@ async function testConnectivity() {
     $('platformInfo').textContent = '没有待测的可选模型（请先「从平台加载全部模型」）';
     return;
   }
-  btn.disabled = true; btn.textContent = '测试中…';
-  $('platformInfo').textContent = `正在连通测试 ${models.length} 个模型（并发 5，约需数十秒）…`;
+  btn.disabled = true; btn.textContent = '测试中 0/' + models.length;
+  $('testBar').style.display = 'block'; $('testFill').style.width = '0%';
+  $('platformInfo').textContent = `正在连通测试 ${models.length} 个模型…`;
+
+  let avail = 0, unavail = 0;
   try {
-    const r = await fetch('/api/models/test', {
+    const resp = await fetch('/api/models/test', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ models, workers: 5 }),
+      body: JSON.stringify({ models, workers: 8 }),
     });
-    const d = await r.json();
-    const results = d.results || {};
-    let avail = 0, unavail = 0;
-    for (const [id, res] of Object.entries(results)) {
-      if (!modelMeta[id]) continue;
-      if (res.available) {
-        modelMeta[id].available = true; avail++;
-      } else {
-        modelMeta[id].available = false; modelMeta[id].error = res.error; unavail++;
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        let d; try { d = JSON.parse(line); } catch { continue; }
+        const pct = d.total ? Math.round(d.done / d.total * 100) : 0;
+        btn.textContent = `测试中 ${d.done}/${d.total}`;
+        $('testFill').style.width = pct + '%';
+        if (d.id && modelMeta[d.id]) {
+          if (d.available) { modelMeta[d.id].available = true; avail++; }
+          else { modelMeta[d.id].available = false; modelMeta[d.id].error = d.error; unavail++; }
+        }
+        $('platformInfo').textContent = `连通测试中 ${pct}% · ${d.done}/${d.total} · 可用 ${avail} / 不可用 ${unavail}`;
       }
     }
     renderOptional();
@@ -286,6 +301,7 @@ async function testConnectivity() {
     $('platformInfo').textContent = '测试失败：' + e;
   } finally {
     btn.disabled = false; btn.textContent = '连通测试';
+    $('testBar').style.display = 'none';
   }
 }
 

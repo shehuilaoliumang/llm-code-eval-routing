@@ -190,15 +190,16 @@ class AppState:
             return {"thinking": {"type": "disabled"}}
         return {"chat_template_kwargs": {"enable_thinking": False}}
 
-    def test_connectivity(self, models: list, workers: int = 5):
-        """并发连通测试：名称预过滤后，对每个模型发一次最小调用。
+    def test_connectivity_stream(self, models: list, workers: int = 8):
+        """流式连通测试：名称预过滤后并发发最小调用，边测边 yield 进度。
 
-        返回 {"tested": N, "available": M, "results": {id: {platform, available, error}}}
-        每次调用约 ¥0.0001~0.001；并发受限流保护。
+        每条进度：{"done": X, "total": N, "id": ..., "available": bool, "error": ...}
+        超时降到 8s（连通性无需久等），并发默认 8 路。
         """
-        from concurrent.futures import ThreadPoolExecutor
+        from concurrent.futures import ThreadPoolExecutor, as_completed
 
         filtered = [m for m in models if _is_code_candidate(m.get("id", ""))]
+        total = len(filtered)
 
         def _test_one(m):
             mid, platform = m["id"], m["platform"]
@@ -206,26 +207,23 @@ class AppState:
                 resp = self.client.chat(
                     platform=platform, model=mid,
                     messages=[{"role": "user", "content": "hi"}],
-                    max_tokens=8, timeout=15,
+                    max_tokens=8, timeout=8,
                     extra_body=self._disable_thinking_for(platform),
                 )
                 if resp.error:
-                    return mid, {"platform": platform, "available": False,
-                                 "error": resp.error[:100]}
-                return mid, {"platform": platform, "available": True, "error": ""}
+                    return mid, {"available": False, "error": resp.error[:100]}
+                return mid, {"available": True, "error": ""}
             except Exception as e:  # noqa: BLE001
-                return mid, {"platform": platform, "available": False,
+                return mid, {"available": False,
                              "error": f"{type(e).__name__}: {str(e)[:80]}"}
 
-        results = {}
+        done = 0
         with ThreadPoolExecutor(max_workers=workers) as ex:
-            for mid, res in ex.map(_test_one, filtered):
-                results[mid] = res
-        return {
-            "tested": len(filtered),
-            "available": sum(1 for r in results.values() if r["available"]),
-            "results": results,
-        }
+            futures = [ex.submit(_test_one, m) for m in filtered]
+            for fut in as_completed(futures):
+                mid, res = fut.result()
+                done += 1
+                yield {"done": done, "total": total, "id": mid, **res}
 
     def model_info(self, model_id):
         cfg = self.registry.get(model_id)
@@ -300,8 +298,12 @@ def list_available_models(refresh: bool = False):
 
 @app.post("/api/models/test")
 def test_models(req: TestRequest):
-    """连通测试：名称过滤后逐个最小调用，返回可用性（花钱，单次约 ¥0.0001~0.001）。"""
-    return state.test_connectivity(req.models, workers=req.workers)
+    """连通测试（流式 NDJSON）：边测边返回进度，前端实时更新（花钱，单次约 ¥0.0001~0.001）。"""
+    def gen():
+        for item in state.test_connectivity_stream(req.models, workers=req.workers):
+            yield json.dumps(item, ensure_ascii=False) + "\n"
+
+    return StreamingResponse(gen(), media_type="application/x-ndjson")
 
 
 @app.get("/api/tasks")
