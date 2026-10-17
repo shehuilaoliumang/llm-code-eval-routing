@@ -185,7 +185,9 @@ class EvaluationRunner:
                 status = "OK" if not row.get("api_error") else "API_ERR"
                 print(f"[{done[0]}/{total}] [{status}] {task['task_id']} "
                       f"{model_id} run{run_idx} 质量={row.get('quality_total')} "
-                      f"成本={row.get('cost_yuan')}元")
+                      f"成本={row.get('cost_yuan')}元 "
+                      f"延迟={row.get('latency_seconds')}s "
+                      f"tok={row.get('input_tokens')}/{row.get('output_tokens')}")
             return idx, row
 
         if workers <= 1 or total == 1:
