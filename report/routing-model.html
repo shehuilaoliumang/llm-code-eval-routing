@@ -59,15 +59,17 @@
   .card .desc { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
   .formula {
     font-family: "SF Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
-    font-size: 15px;
+    font-size: 13.5px;
     background: #fbfbfe;
     border: 1px solid var(--border);
     border-left: 3px solid var(--purple);
     border-radius: 8px;
-    padding: 14px 18px;
+    padding: 12px 14px;
     margin: 12px 0;
     overflow-x: auto;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.9;
   }
   .formula .hl { color: var(--purple); font-weight: 600; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
