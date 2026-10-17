@@ -190,5 +190,30 @@ class TestScoredRecordType(unittest.TestCase):
         self.assertEqual(merged["type"], "generation")  # 证明旧写法确有 bug
 
 
+class TestDashboardRender(unittest.TestCase):
+    """回归：仪表盘渲染 JS 必须无语法/运行时错误。
+
+    历史 bug：__ROWS__ 以裸 HTML 注入 JS 表达式（`表头</tr>` + <tr>...），
+    造成 SyntaxError，整个渲染脚本失效、图表全空。
+    """
+
+    def test_dashboard_render_js(self):
+        import shutil
+        import subprocess
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("node 不可用")
+        script = os.path.join(ROOT, "tools", "verify_dashboard.js")
+        if not os.path.exists(script):
+            self.skipTest("tools/verify_dashboard.js 不存在")
+        html = os.path.join(ROOT, "report", "dashboard.html")
+        if not os.path.exists(html):
+            self.skipTest("dashboard.html 尚未生成")
+        r = subprocess.run([node, script, html], capture_output=True,
+                           text=True, timeout=30, cwd=ROOT)
+        self.assertIn("错误: 无", r.stdout,
+                      f"仪表盘渲染 JS 有错误:\n{r.stdout}\n{r.stderr}")
+
+
 if __name__ == "__main__":
     unittest.main()

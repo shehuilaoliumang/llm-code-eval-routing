@@ -377,7 +377,9 @@ def generate_dashboard(rows, eval_cfg, source_files, chartjs_path, out_path):
     html = (HTML_TEMPLATE
             .replace("__CHARTJS__", chartjs)
             .replace("__DATA__", json.dumps(payload, ensure_ascii=False))
-            .replace("__ROWS__", _rows_html(rows)))
+            # __ROWS__ 位于 JS 表达式 `表头` + __ROWS__ 中，必须以 JS 字符串字面量注入，
+            # 否则裸 <tr> 标签会造成 SyntaxError，整个渲染脚本失效（图表全空）
+            .replace("__ROWS__", json.dumps(_rows_html(rows))))
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
     return payload, out_path
