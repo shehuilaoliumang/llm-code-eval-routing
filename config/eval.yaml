@@ -1,5 +1,5 @@
 # 评测执行配置（口径层）——全模型完全一致，改动需升版本号并重生成 manifest
-version: "1.1"
+version: "1.2"
 
 # 思考链控制（2026-10-17 实测）：Qwen 系默认开启思考，且开启时 max_tokens 被无视、
 # 输出可达 10 倍（750 vs 23 tokens）。必须显式关闭，机制配置在各模型的
@@ -16,10 +16,9 @@ generation:
   runs_per_task: 3               # 每题每模型重复次数
 
 judge:
-  model: deepseek-v4.1-flash-official  # 默认全量评判走 DeepSeek 官方 API（独立性最强：与被评测两平台无关）
-  cross_check_models:            # 10% 样本交叉验证（多裁判一致性）
-    - deepseek-v4-pro-official   # DeepSeek 官方 API（9/27，独立性最强）
-    - deepseek-v4-pro            # 方舟托管（9/27，作为「官方 vs 托管」一致性参照）
+  model: deepseek-v4-pro-official  # 升级为官方 Pro（v1.2）：Flash 实测打分偏松集中（81%打95），Pro 拉开区分度
+  cross_check_models:            # 10% 样本交叉验证
+    - deepseek-v4-pro            # 方舟托管 Pro（作为「官方 vs 托管」一致性参照）
   cross_check_ratio: 0.10        # 10% 样本用交叉裁判验证
   temperature: 0
   max_tokens: 1024
@@ -27,7 +26,7 @@ judge:
 
 scoring:
   pass_line: {L1: 60, L2: 60, L3: 65, L4: 70}
-  weights: {syntax: 0.30, functional: 0.40, style: 0.20, robustness: 0.10}
+  weights: {syntax: 0.10, functional: 0.45, style: 0.20, robustness: 0.25}
 
 retry:
   max_attempts: 5                # 单次调用最大尝试次数（指数退避）
