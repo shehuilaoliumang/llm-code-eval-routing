@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>路由分派模型 · LLM代码生成能力评估与智能路由研究</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --card: #ffffff;
+    --border: #e4e6ee;
+    --text: #26221c;
+    --muted: #6b6f7a;
+    --purple: #534ab7;
+    --purple-dark: #3c3489;
+    --purple-bg: #eeedfe;
+    --blue: #185fa5;
+    --blue-bg: #e6f1fb;
+    --green: #3b6d11;
+    --green-bg: #eaf3de;
+    --amber: #854f0b;
+    --amber-bg: #faeeda;
+    --coral: #993c1d;
+    --coral-bg: #faece7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 40px 20px 60px;
+  }
+  .page { max-width: 920px; margin: 0 auto; }
+  .hero {
+    text-align: center;
+    padding: 32px 24px;
+    margin-bottom: 24px;
+  }
+  .hero h1 { font-size: 26px; font-weight: 600; color: var(--purple-dark); letter-spacing: 0.5px; }
+  .hero .sub { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .hero .tag {
+    display: inline-block; margin-top: 14px;
+    font-size: 12px; color: var(--purple);
+    background: var(--purple-bg); border: 1px solid #cecbf6;
+    border-radius: 20px; padding: 4px 14px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 16px; font-weight: 600; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .card .desc { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  .formula {
+    font-family: "SF Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+    font-size: 15px;
+    background: #fbfbfe;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .formula .hl { color: var(--purple); font-weight: 600; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 720px) {
+    .grid-2, .grid-4 { grid-template-columns: 1fr; }
+  }
+  .mini {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .mini .k { font-size: 13px; font-weight: 600; color: var(--text); }
+  .mini .v { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .weight { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .chip {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+  }
+  .chip b { color: var(--text); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; }
+  td.mono { font-family: "SF Mono", Consolas, "Courier New", monospace; font-size: 12.5px; }
+  .lv { font-weight: 600; }
+  .lv-1 { color: var(--green); } .lv-2 { color: var(--amber); }
+  .lv-3 { color: var(--blue); } .lv-4 { color: var(--purple); }
+  .footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .svg-wrap { margin: 8px 0 4px; }
+  .svg-wrap svg { width: 100%; height: auto; display: block; }
+  .note {
+    font-size: 12px; color: var(--coral);
+    background: var(--coral-bg);
+    border: 1px solid #f5c4b3;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <h1>路由分派模型</h1>
+    <div class="sub">LLM 代码生成能力评估与智能路由研究 · 核心方法论</div>
+    <span class="tag">先验版 v1.0 · 待实测数据校准</span>
+  </div>
+
+  <div class="card">
+    <h2>两步筛选法</h2>
+    <div class="desc">先看「能不能干」，再看「谁最划算」——质量门槛一票否决，性价比排序择优。</div>
+
+    <div class="grid-2">
+      <div class="mini">
+        <div class="k">第一步 · 质量门槛</div>
+        <div class="formula">S_quality = <span class="hl">0.3</span>×语法 + <span class="hl">0.4</span>×功能 + <span class="hl">0.2</span>×规范 + <span class="hl">0.1</span>×健壮</div>
+        <div class="weight">
+          <span class="chip"><b>语法 30%</b> 自动</span>
+          <span class="chip"><b>功能 40%</b> 单测</span>
+          <span class="chip"><b>规范 20%</b> 裁判</span>
+          <span class="chip"><b>健壮 10%</b> 裁判</span>
+        </div>
+        <div class="desc" style="margin:12px 0 0;">及格线：L1/L2 = 60 · L3 = 65 · L4 = 70，未达标即淘汰。</div>
+      </div>
+      <div class="mini">
+        <div class="k">第二步 · 性价比排序</div>
+        <div class="formula">S_value = S_quality / ( Cost<sup>α</sup> × Time<sup>β</sup> )</div>
+        <div class="weight">
+          <span class="chip"><b>α</b> 成本敏感 0.65</span>
+          <span class="chip"><b>β</b> 时延敏感 0.25</span>
+        </div>
+        <div class="desc" style="margin:12px 0 0;">成本敏感 α=0.8/β=0.15 · 均衡 0.65/0.25 · 时延敏感 0.4/0.4。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>难度 → 档位分派</h2>
+    <div class="desc">每档双平台互备（火山方舟 / 阿里云百炼各一款），单平台故障可切换。</div>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 900 396" role="img" xmlns="http://www.w3.org/2000/svg">
+        <title>难度到模型档位的分派映射</title>
+        <desc>L1入门交给T3轻量，L2进阶交给T2均衡，L3高级交给T1代码专项，L4专家交给T0旗舰</desc>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <g>
+          <rect x="40" y="40" width="160" height="60" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
+          <text x="120" y="63" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L1 入门</text>
+          <text x="120" y="84" text-anchor="middle" font-size="12" fill="#5f5e5a">单函数 · 短代码</text>
+          <line x1="202" y1="70" x2="416" y2="70" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <rect x="420" y="40" width="440" height="60" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+          <text x="640" y="63" text-anchor="middle" font-size="15" font-weight="600" fill="#27500a">T3 轻量级</text>
+          <text x="640" y="84" text-anchor="middle" font-size="12.5" fill="#3b6d11">doubao-seed-2.0-mini · qwen3.7-flash</text>
+        </g>
+
+        <g>
+          <rect x="40" y="120" width="160" height="60" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
+          <text x="120" y="143" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L2 进阶</text>
+          <text x="120" y="164" text-anchor="middle" font-size="12" fill="#5f5e5a">多函数 · 完整类</text>
+          <line x1="202" y1="150" x2="416" y2="150" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <rect x="420" y="120" width="440" height="60" rx="10" fill="#FAEEDA" stroke="#854F0B" stroke-width="1"/>
+          <text x="640" y="143" text-anchor="middle" font-size="15" font-weight="600" fill="#633806">T2 均衡级</text>
+          <text x="640" y="164" text-anchor="middle" font-size="12.5" fill="#854f0b">doubao-seed-2.1-lite · qwen3.7-plus</text>
+        </g>
+
+        <g>
+          <rect x="40" y="200" width="160" height="60" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
+          <text x="120" y="223" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L3 高级</text>
+          <text x="120" y="244" text-anchor="middle" font-size="12" fill="#5f5e5a">算法 · 重构 · 调试</text>
+          <line x1="202" y1="230" x2="416" y2="230" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <rect x="420" y="200" width="440" height="60" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+          <text x="640" y="223" text-anchor="middle" font-size="15" font-weight="600" fill="#0c447c">T1 代码专项</text>
+          <text x="640" y="244" text-anchor="middle" font-size="12.5" fill="#185fa5">doubao-seed-2-0-code-preview · qwen3-coder-flash</text>
+        </g>
+
+        <g>
+          <rect x="40" y="280" width="160" height="60" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1"/>
+          <text x="120" y="303" text-anchor="middle" font-size="15" font-weight="600" fill="#2c2c2a">L4 专家</text>
+          <text x="120" y="324" text-anchor="middle" font-size="12" fill="#5f5e5a">框架级 · 分布式</text>
+          <line x1="202" y1="310" x2="416" y2="310" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <rect x="420" y="280" width="440" height="60" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+          <text x="640" y="303" text-anchor="middle" font-size="15" font-weight="600" fill="#3c3489">T0 旗舰级</text>
+          <text x="640" y="324" text-anchor="middle" font-size="12.5" fill="#534ab7">doubao-seed-2.1-pro · qwen3.8-max</text>
+        </g>
+
+        <text x="40" y="372" font-size="12" fill="#5f5e5a">单次成本随档位递升：T3 ≈ 0.001~0.002 元 → T2 ≈ 0.003~0.009 元 → T1 ≈ 0.005~0.014 元 → T0 ≈ 0.023~0.047 元</text>
+        <text x="40" y="392" font-size="12" fill="#5f5e5a">低置信度保守策略：分类置信度 &lt; 0.7 时难度升一档重走筛选排序</text>
+      </svg>
+    </div>
+    <div class="note">当前为「先验规则」（基于官方定价与公开定位推导），全量评测完成后将被实测数据替换——该替换过程即本研究核心成果。</div>
+  </div>
+
+  <div class="card">
+    <h2>四步决策</h2>
+    <div class="desc">任务进入后的完整处理链路，三层解耦、独立可替换。</div>
+    <div class="grid-4">
+      <div class="mini">
+        <div class="k">① 难度分类</div>
+        <div class="v">T3 轻量模型判断 L1~L4 + 置信度，成本 &lt; 0.001 元/次</div>
+      </div>
+      <div class="mini">
+        <div class="k">② 候选筛选</div>
+        <div class="v">硬约束过滤 → 质量门槛（S_quality ≥ 及格线）</div>
+      </div>
+      <div class="mini">
+        <div class="k">③ 性价比排序</div>
+        <div class="v">S_value 从高到低排，确定首选与备选链</div>
+      </div>
+      <div class="mini">
+        <div class="k">④ 分派执行</div>
+        <div class="v">Top1 首选，Top2/3 备选；失败进入回退链</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>五层回退</h2>
+    <div class="desc">首选失败时逐级兜底，保证端到端成功率 ≥ 95%。</div>
+    <table>
+      <tr><th style="width:130px;">层级</th><th style="width:220px;">触发条件</th><th>动作</th></tr>
+      <tr><td class="lv lv-1">L1 质量回退</td><td>代码未过语法 / 单测</td><td>按备选链下一模型重试，携带上次失败信息</td></tr>
+      <tr><td class="lv lv-2">L2 连续失败升级</td><td>连续 2 个模型失败</td><td>跳过排序，直接升旗舰</td></tr>
+      <tr><td class="lv lv-3">L3 平台故障转移</td><td>平台 5xx / 限流 / 超时</td><td>切另一平台同梯队模型</td></tr>
+      <tr><td class="lv lv-3">L4 高负载降级</td><td>并发请求过大</td><td>临时优先响应更快的模型</td></tr>
+      <tr><td class="lv lv-4">L5 预算熔断</td><td>日累计成本到上限</td><td>暂停付费调用，告警等待</td></tr>
+    </table>
+  </div>
+
+  <div class="footer">LLM 代码生成能力评估与智能路由研究 · 计划书 v3.1（实测校准版） · 生成于 2026-10-17</div>
+
+</div>
+</body>
+</html>
