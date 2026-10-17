@@ -76,6 +76,11 @@
   <div class="card">
     <h2>① 选择模型（<span id="modelCount">0</span> 个已选）</h2>
     <div class="row" id="modelList">加载中…</div>
+    <div style="margin-top:12px;">
+      <button class="btn" id="loadPlatformBtn" onclick="loadPlatformModels()" style="background:#6b6f7a;">从平台加载全部模型</button>
+      <span style="font-size:12px;color:var(--muted);margin-left:8px;" id="platformInfo"></span>
+    </div>
+    <div id="platformModels" style="margin-top:10px;display:none;"></div>
   </div>
 
   <div class="card">
@@ -129,14 +134,49 @@ async function loadTasks() {
   allTasks = d.tasks;
 }
 function updateCount() {
-  $('modelCount').textContent = document.querySelectorAll('.model:checked').length;
+  $('modelCount').textContent = document.querySelectorAll('.model:checked, .pmodel:checked').length;
 }
 
 function selectedModels() {
-  return allModels.filter(m => document.querySelector(`.model[value="${m.id}"]`)?.checked).map(m => m.id);
+  const verified = allModels.filter(m => document.querySelector(`.model[value="${m.id}"]`)?.checked).map(m => m.id);
+  const platform = [...document.querySelectorAll('.pmodel:checked')].map(c => c.value);
+  return [...verified, ...platform];
 }
 function selectedDiffs() {
   return [...document.querySelectorAll('.diff:checked')].map(c => c.value);
+}
+
+async function loadPlatformModels() {
+  const btn = $('loadPlatformBtn');
+  btn.disabled = true; btn.textContent = '加载中…';
+  let d;
+  try {
+    const r = await fetch('/api/models/available?refresh=true');
+    d = await r.json();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = '从平台加载全部模型';
+    $('platformInfo').textContent = '加载失败：' + e;
+    return;
+  }
+  btn.disabled = false; btn.textContent = '从平台加载全部模型';
+
+  const verified = new Set(d.verified_ids || []);
+  const renderGroup = (title, models) => {
+    const others = (models || []).filter(m => !verified.has(m));
+    if (!others.length) return '';
+    return `<div style="margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;">${title} <span style="font-weight:400;color:var(--muted);font-size:12px;">（${models.length} 个可用，未配置 ${others.length} 个）</span></div>
+      <div class="row" style="max-height:180px;overflow-y:auto;margin-top:6px;">${others.map(m =>
+        `<label class="chk" style="opacity:0.9;"><input type="checkbox" class="pmodel" value="${m}"> ${m}</label>`
+      ).join('')}</div></div>`;
+  };
+  $('platformModels').innerHTML = renderGroup('火山方舟', d.volcengine) + renderGroup('阿里云百炼', d.aliyun);
+  $('platformModels').style.display = 'block';
+  $('platformInfo').textContent = `已验证候选 ${(d.verified_ids||[]).length} 款可直接评估；其余为平台可用但未配置（成本/思考链控制可能不准）`;
+  if (d.errors && d.errors.length) {
+    $('platformInfo').textContent += ' | ' + d.errors.join('；');
+  }
+  document.querySelectorAll('.pmodel').forEach(c => c.addEventListener('change', updateCount));
 }
 
 async function startEval() {

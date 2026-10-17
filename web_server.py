@@ -86,9 +86,86 @@ class AppState:
         self.broker = ProgressBroker()
         self._eval_thread = None
         self._eval_lock = threading.Lock()
+        self._platform_models_cache = None
+        self._platform_models_time = 0.0
 
     def candidate_models(self):
         return [m for m in self.registry.candidates()]
+
+    def list_platform_models(self, refresh: bool = False):
+        """动态查询两平台所有可用模型（models.list，免费不耗 token）。
+
+        返回 {"volcengine": [模型ID...], "aliyun": [...],
+              "verified_ids": [已验证候选...], "errors": [...]}
+        带 5 分钟内存缓存；单平台查询失败不影响另一平台。
+        """
+        import time
+
+        if (not refresh and self._platform_models_cache is not None
+                and time.time() - self._platform_models_time < 300):
+            return self._platform_models_cache
+
+        from openai import OpenAI
+
+        result = {"volcengine": [], "aliyun": [],
+                  "verified_ids": self.candidate_models(), "errors": []}
+
+        # 火山方舟
+        key = os.environ.get("VOLCENGINE_API_KEY")
+        if key:
+            try:
+                base = self.models_cfg["platforms"]["volcengine"]["base_url"]
+                c = OpenAI(api_key=key, base_url=base, timeout=15)
+                result["volcengine"] = sorted(m.id for m in c.models.list().data)
+            except Exception as e:  # noqa: BLE001
+                result["errors"].append(f"方舟: {type(e).__name__}")
+        else:
+            result["errors"].append("缺少 VOLCENGINE_API_KEY")
+
+        # 阿里云百炼
+        key = os.environ.get("DASHSCOPE_API_KEY")
+        if key:
+            try:
+                base = self.models_cfg["platforms"]["aliyun"]["base_url"]
+                c = OpenAI(api_key=key, base_url=base, timeout=15)
+                result["aliyun"] = sorted(m.id for m in c.models.list().data)
+            except Exception as e:  # noqa: BLE001
+                result["errors"].append(f"百炼: {type(e).__name__}")
+        else:
+            result["errors"].append("缺少 DASHSCOPE_API_KEY")
+
+        self._platform_models_cache = result
+        self._platform_models_time = time.time()
+        return result
+
+    def _ensure_model_config(self, model_id: str) -> str:
+        """未配置的模型动态注册最小配置（探索性评估，尽力而为）。
+
+        平台根据模型名前缀推断；定价未知记 0，思考链按平台默认机制关闭。
+        已验证候选（models.yaml 中）原样返回，不重复注册。
+        """
+        if model_id in self.registry.models:
+            return model_id
+        if model_id.startswith(("doubao", "deepseek", "glm", "kimi", "moonshot")):
+            platform = "volcengine"
+            disable = {"thinking": {"type": "disabled"}}
+        elif model_id.startswith(("qwen", "qwq")):
+            platform = "aliyun"
+            disable = {"chat_template_kwargs": {"enable_thinking": False}}
+        else:
+            return model_id  # 无法推断平台，交给 registry 报错
+        self.registry.models[model_id] = {
+            "platform": platform,
+            "tier": "T?",
+            "role": "candidate",
+            "enabled": True,
+            "snapshot": model_id,
+            "context_window": 0,
+            "pricing": [{"upto_input": 1000000, "input": 0.0, "output": 0.0}],
+            "disable_thinking_body": disable,
+            "note": "动态注册：未配置定价/思考链，成本记为 0",
+        }
+        return model_id
 
     def model_info(self, model_id):
         cfg = self.registry.get(model_id)
@@ -121,6 +198,8 @@ class AppState:
             if req.task_ids:
                 tasks = [t for t in tasks if t["task_id"] in req.task_ids]
             models = req.models or self.candidate_models()
+            # 未配置的平台模型动态注册最小配置（探索性评估）
+            models = [self._ensure_model_config(m) for m in models]
             recorder = JSONLRecorder(os.path.join(RESULTS_DIR, f"web_{eval_id}.jsonl"))
 
             def on_progress(ev):
@@ -151,6 +230,12 @@ app = FastAPI(title="LLM 代码生成能力评估 · 实时可视化")
 @app.get("/api/models")
 def list_models():
     return {"models": [state.model_info(m) for m in state.candidate_models()]}
+
+
+@app.get("/api/models/available")
+def list_available_models(refresh: bool = False):
+    """动态查询两平台所有可用模型（免费 models.list，带 5 分钟缓存）。"""
+    return state.list_platform_models(refresh=refresh)
 
 
 @app.get("/api/tasks")
