@@ -34,3 +34,6 @@ tmp/
 
 # 构建日志
 logs_*.txt
+
+# WorkBuddy 工作记忆（内部预算/决策/日志，不对外公开）
+.workbuddy/memory/

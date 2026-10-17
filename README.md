@@ -125,3 +125,9 @@ output_tokens / input_tier / cost_yuan / latency_seconds / code / test_details`�
 - [x] **及格线校准至 85**：拦住 L4 掉队的 coder-flash（78），保留功能正确的便宜模型
 - [x] **核心结论产出**：L1~L3 首选 `qwen3.7-flash`（性价比碾压），L4 需旗舰兜底；分级路由比全程旗舰省约 71%
 - [x] 路由 Skill 数据层升级为实测版 + 研究报告撰写完成
+
+## 许可证
+
+本项目采用 [MIT License](LICENSE)。你可以自由使用、修改、分发，但需保留版权声明。
+
+> 注：`data/tasks/` 下的测试集与 `data/results/` 下的评测原始数据随代码一并开源，便于复现研究结论；API Key 等敏感信息仅存于本地 `.env.local`，未纳入仓库。
