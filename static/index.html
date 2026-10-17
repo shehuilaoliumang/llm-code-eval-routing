@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM 代码生成能力评估 · 实时面板</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --border: #e4e6ee;
+    --text: #26221c; --muted: #6b6f7a;
+    --purple: #534ab7; --green: #3b6d11; --coral: #993c1d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+    padding: clamp(14px, 3vw, 32px);
+  }
+  .page { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: clamp(18px, 3.5vw, 24px); font-weight: 600; color: var(--purple); }
+  .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 20px; margin-top: 16px;
+  }
+  .card h2 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  label.chk {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+    padding: 5px 10px; border: 1px solid var(--border); border-radius: 8px;
+    cursor: pointer; background: var(--bg);
+  }
+  label.chk input { accent-color: var(--purple); }
+  label.chk .tier { color: var(--muted); font-size: 11px; }
+  .btn {
+    background: var(--purple); color: #fff; border: none; border-radius: 8px;
+    padding: 9px 20px; font-size: 14px; cursor: pointer; font-weight: 500;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn.stop { background: var(--coral); }
+  .field { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .field input, .field select {
+    padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+  }
+  .field input[type=number] { width: 60px; }
+  .progress-bar {
+    height: 10px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; overflow: hidden; margin: 10px 0 6px;
+  }
+  .progress-bar .fill { height: 100%; background: var(--purple); width: 0; transition: width 0.2s; }
+  .stat { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; }
+  .stat b { font-size: 20px; color: var(--purple); }
+  .stat span { color: var(--muted); font-size: 12px; }
+  #events {
+    max-height: 360px; overflow-y: auto; font-family: "SF Mono", Consolas, monospace;
+    font-size: 12px; border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; background: var(--bg);
+  }
+  #events .ev { padding: 2px 0; border-bottom: 1px dashed var(--border); }
+  #events .ev.ok { color: var(--green); }
+  #events .ev.err { color: var(--coral); }
+  .status-pill {
+    display: inline-block; font-size: 12px; padding: 3px 12px; border-radius: 20px;
+    background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+  }
+  .status-pill.running { color: var(--purple); border-color: #cecbf6; background: #eeedfe; }
+  .status-pill.done { color: var(--green); border-color: #c6ddab; background: #eaf3de; }
+  .status-pill.error { color: var(--coral); border-color: #f5c4b3; background: #faece7; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>LLM 代码生成能力评估 · 实时面板</h1>
+  <div class="sub">选择模型与任务 → 启动评估 → 实时查看每道题的判分进度（SSE 推送）</div>
+
+  <div class="card">
+    <h2>① 选择模型（<span id="modelCount">0</span> 个已选）</h2>
+    <div class="row" id="modelList">加载中…</div>
+  </div>
+
+  <div class="card">
+    <h2>② 选择任务难度</h2>
+    <div class="row" id="diffList">
+      <label class="chk"><input type="checkbox" class="diff" value="L1" checked> L1 入门</label>
+      <label class="chk"><input type="checkbox" class="diff" value="L2" checked> L2 进阶</label>
+      <label class="chk"><input type="checkbox" class="diff" value="L3" checked> L3 高级</label>
+      <label class="chk"><input type="checkbox" class="diff" value="L4" checked> L4 专家</label>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <div class="field">每模型次数 <input type="number" id="runs" value="1" min="1" max="3"></div>
+      <div class="field">并发 <input type="number" id="workers" value="6" min="1" max="12"></div>
+      <button class="btn" id="startBtn" onclick="startEval()">启动评估</button>
+      <span class="status-pill" id="statusPill">空闲</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>③ 实时进度</h2>
+    <div class="progress-bar"><div class="fill" id="fill"></div></div>
+    <div class="stat">
+      <div><b id="statDone">0</b><span> / </span><b id="statTotal">0</b> 完成</div>
+      <div>总成本 <b id="statCost">¥0.00</b></div>
+      <div>平均质量 <b id="statQuality">—</b></div>
+      <div>已用时 <b id="statElapsed">0s</b></div>
+    </div>
+    <div id="events" style="margin-top:10px;">等待启动…</div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let es = null;
+let allModels = [];
+let allTasks = [];
+let costSum = 0, qualitySum = 0, qualityCnt = 0, startTime = 0;
+
+async function loadModels() {
+  const r = await fetch('/api/models'); const d = await r.json();
+  allModels = d.models;
+  $('modelList').innerHTML = allModels.map(m =>
+    `<label class="chk"><input type="checkbox" class="model" value="${m.id}" checked>
+     ${m.id} <span class="tier">${m.tier} · ${m.display}</span></label>`
+  ).join('');
+  $('modelCount').textContent = allModels.length;
+  document.querySelectorAll('.model').forEach(c => c.addEventListener('change', updateCount));
+}
+async function loadTasks() {
+  const r = await fetch('/api/tasks'); const d = await r.json();
+  allTasks = d.tasks;
+}
+function updateCount() {
+  $('modelCount').textContent = document.querySelectorAll('.model:checked').length;
+}
+
+function selectedModels() {
+  return allModels.filter(m => document.querySelector(`.model[value="${m.id}"]`)?.checked).map(m => m.id);
+}
+function selectedDiffs() {
+  return [...document.querySelectorAll('.diff:checked')].map(c => c.value);
+}
+
+async function startEval() {
+  const models = selectedModels();
+  const diffs = selectedDiffs();
+  const taskIds = allTasks.filter(t => diffs.includes(t.difficulty)).map(t => t.task_id);
+  if (!models.length || !taskIds.length) { alert('请至少选择一个模型和一个难度'); return; }
+
+  $('startBtn').disabled = true;
+  setStatus('running', '运行中');
+  costSum = 0; qualitySum = 0; qualityCnt = 0; startTime = Date.now();
+  $('events').innerHTML = '';
+  $('statCost').textContent = '¥0.00'; $('statQuality').textContent = '—';
+
+  // 先建立 SSE 订阅，再发起评估，避免漏事件
+  openSSE();
+  await fetch('/api/eval', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({models, task_ids: taskIds,
+                          runs: +$('runs').value, workers: +$('workers').value}),
+  });
+}
+
+function openSSE() {
+  if (es) es.close();
+  es = new EventSource('/api/eval/stream');
+  es.addEventListener('status', e => {
+    const d = JSON.parse(e.data);
+    if (d.status === 'done') { setStatus('done', '完成'); $('startBtn').disabled = false; }
+    if (d.status === 'error') { setStatus('error', '出错'); $('startBtn').disabled = false; }
+  });
+  es.addEventListener('progress', e => {
+    const d = JSON.parse(e.data);
+    $('statDone').textContent = d.done; $('statTotal').textContent = d.total;
+    $('fill').style.width = (d.total ? d.done / d.total * 100 : 0) + '%';
+    $('statElapsed').textContent = Math.round((Date.now() - startTime) / 1000) + 's';
+    if (d.cost_yuan != null) { costSum += d.cost_yuan; $('statCost').textContent = '¥' + costSum.toFixed(4); }
+    if (d.quality_total != null) { qualitySum += d.quality_total; qualityCnt++; $('statQuality').textContent = (qualitySum / qualityCnt).toFixed(1); }
+    const cls = d.status === 'OK' ? 'ok' : 'err';
+    const div = document.createElement('div');
+    div.className = 'ev ' + cls;
+    div.textContent = `[${d.done}/${d.total}] ${d.task_id} ${d.model} run${d.run} 质量=${d.quality_total ?? '—'} 成本=¥${d.cost_yuan ?? 0} 延迟=${d.latency_seconds ?? 0}s`;
+    $('events').prepend(div);
+  });
+}
+
+function setStatus(s, text) {
+  const p = $('statusPill'); p.textContent = text; p.className = 'status-pill ' + s;
+}
+
+loadModels(); loadTasks();
+</script>
+</body>
+</html>

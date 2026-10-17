@@ -1,2 +1,4 @@
 openai>=1.40
 PyYAML>=6.0
+fastapi>=0.143
+uvicorn>=0.54

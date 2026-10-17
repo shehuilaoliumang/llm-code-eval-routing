@@ -25,7 +25,7 @@ def load_tasks(path: str) -> List[Dict]:
 
 class EvaluationRunner:
     def __init__(self, registry, eval_cfg, client, recorder: JSONLRecorder,
-                 cross_check_ratio: float = 0.0):
+                 cross_check_ratio: float = 0.0, progress_callback=None):
         self.registry = registry
         self.cfg = eval_cfg
         self.client = client
@@ -35,6 +35,9 @@ class EvaluationRunner:
         self.judge_cfg = eval_cfg.judge
         self.cross_check_ratio = cross_check_ratio
         self.disable_thinking = eval_cfg.cfg.get("disable_thinking", True)
+        # 实时进度回调（可选）：每完成一个 job 调用一次，参数为进度事件 dict。
+        # 供 Web 服务（SSE 推送）使用；CLI 场景保持 None，行为不变。
+        self.progress_callback = progress_callback
 
     def _extra_body(self, model_cfg):
         """按口径关闭思考链（默认关闭）。各平台机制不同，配置在 models.yaml
@@ -188,6 +191,21 @@ class EvaluationRunner:
                       f"成本={row.get('cost_yuan')}元 "
                       f"延迟={row.get('latency_seconds')}s "
                       f"tok={row.get('input_tokens')}/{row.get('output_tokens')}")
+                if self.progress_callback is not None:
+                    self.progress_callback({
+                        "done": done[0],
+                        "total": total,
+                        "task_id": task["task_id"],
+                        "difficulty": task.get("difficulty", ""),
+                        "model": model_id,
+                        "run": run_idx,
+                        "status": status,
+                        "quality_total": row.get("quality_total"),
+                        "syntax_score": row.get("syntax_score"),
+                        "functional_score": row.get("functional_score"),
+                        "cost_yuan": row.get("cost_yuan"),
+                        "latency_seconds": row.get("latency_seconds"),
+                    })
             return idx, row
 
         if workers <= 1 or total == 1:
@@ -216,9 +234,11 @@ def _in_cross_check(task: Dict, model_id: str, run_idx: int) -> bool:
 _RATIO_HOLDER = {"ratio": 0.0}
 
 
-def make_runner(registry, eval_cfg, client, recorder, cross_check_ratio):
+def make_runner(registry, eval_cfg, client, recorder, cross_check_ratio,
+                progress_callback=None):
     _RATIO_HOLDER["ratio"] = cross_check_ratio
-    return EvaluationRunner(registry, eval_cfg, client, recorder, cross_check_ratio)
+    return EvaluationRunner(registry, eval_cfg, client, recorder,
+                            cross_check_ratio, progress_callback)
 
 
 def default_recorder(out_dir: str, tag: str) -> JSONLRecorder:
