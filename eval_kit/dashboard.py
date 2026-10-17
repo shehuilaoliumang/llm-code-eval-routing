@@ -251,6 +251,10 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-size:12.5
 .note{font-size:12px;color:var(--sub);margin-top:10px}
 .filters{display:flex;gap:16px;margin-bottom:10px;font-size:12.5px;color:var(--sub)}
 .filters select{padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;margin-left:6px;background:#fff}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{background:#eef2f7}
+.sarr{color:#cbd5e1;font-size:10px;margin-left:3px}
+.sarr.act{color:var(--accent)}
 footer{color:var(--sub);font-size:11.5px;text-align:center;margin:24px 0 8px}
 .big{font-size:26px}
 </style>
@@ -446,8 +450,8 @@ function renderRows() {
   }
   $("rowsCount").textContent = ` — 显示 ${rs.length}/${allRows.length} 条`;
   const heads = rowCols.map(([k,label])=>{
-    const arrow = rowState.key===k ? (rowState.desc?" ▲":" ▼") : "";
-    return `<th style="cursor:pointer" onclick="sortRows('${k}')">${label}${arrow}</th>`;
+    const arrow = rowState.key===k ? (rowState.desc?" ▲":" ▼") : " ⇅";
+    return `<th class="sortable" onclick="sortRows('${k}')">${label}<span class="sarr${rowState.key===k?" act":""}">${arrow}</span></th>`;
   }).join("");
   $("tblRows").innerHTML = `<tr>${heads}</tr>` + rs.map(rowCell).join("");
 }
