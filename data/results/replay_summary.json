@@ -1,0 +1,918 @@
+{
+  "baseline": {
+    "pro": {
+      "avg_cost": 0.01673908333333333,
+      "total_cost": 0.803476,
+      "avg_quality": 93.64166666666667
+    },
+    "max": {
+      "avg_cost": 0.020867499999999997,
+      "total_cost": 1.0016399999999999,
+      "avg_quality": 93.565625
+    }
+  },
+  "E1_prior": {
+    "n": 48,
+    "pass_rate": 1.0,
+    "hit_first_rate": 0.9791666666666666,
+    "avg_cost": 0.008803465277777778,
+    "total_cost": 0.4225663333333333,
+    "avg_latency": 9.643833333333333,
+    "per_task": [
+      {
+        "task_id": "L1-001",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00028233333333333333,
+        "lat": 4.618
+      },
+      {
+        "task_id": "L1-002",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00020933333333333334,
+        "lat": 3.055
+      },
+      {
+        "task_id": "L1-003",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00032333333333333335,
+        "lat": 4.360333333333333
+      },
+      {
+        "task_id": "L1-004",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0002446666666666667,
+        "lat": 2.6943333333333332
+      },
+      {
+        "task_id": "L1-005",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00031033333333333336,
+        "lat": 4.206666666666666
+      },
+      {
+        "task_id": "L1-006",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000195,
+        "lat": 2.6173333333333333
+      },
+      {
+        "task_id": "L1-007",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000269,
+        "lat": 4.220000000000001
+      },
+      {
+        "task_id": "L1-008",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0003663333333333333,
+        "lat": 5.873
+      },
+      {
+        "task_id": "L1-009",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0002753333333333334,
+        "lat": 4.535
+      },
+      {
+        "task_id": "L1-010",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00033766666666666667,
+        "lat": 4.983333333333333
+      },
+      {
+        "task_id": "L1-011",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00033866666666666664,
+        "lat": 4.455
+      },
+      {
+        "task_id": "L1-012",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00030566666666666665,
+        "lat": 3.753
+      },
+      {
+        "task_id": "L2-001",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0014983333333333333,
+        "lat": 7.958
+      },
+      {
+        "task_id": "L2-002",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0006676666666666667,
+        "lat": 3.94
+      },
+      {
+        "task_id": "L2-003",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.001277,
+        "lat": 6.463666666666667
+      },
+      {
+        "task_id": "L2-004",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0013653333333333334,
+        "lat": 7.099333333333333
+      },
+      {
+        "task_id": "L2-005",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0011186666666666667,
+        "lat": 4.908
+      },
+      {
+        "task_id": "L2-006",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0015033333333333333,
+        "lat": 8.060666666666666
+      },
+      {
+        "task_id": "L2-007",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.002495666666666667,
+        "lat": 11.090333333333334
+      },
+      {
+        "task_id": "L2-008",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00107,
+        "lat": 5.200666666666667
+      },
+      {
+        "task_id": "L2-009",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000795,
+        "lat": 4.091
+      },
+      {
+        "task_id": "L2-010",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0018086666666666668,
+        "lat": 8.051
+      },
+      {
+        "task_id": "L2-011",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.001464,
+        "lat": 7.737333333333333
+      },
+      {
+        "task_id": "L2-012",
+        "difficulty": "L2",
+        "passed_model": "doubao-seed-2-1-lite-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0015576666666666666,
+        "lat": 7.498
+      },
+      {
+        "task_id": "L3-001",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.012629333333333334,
+        "lat": 16.281666666666666
+      },
+      {
+        "task_id": "L3-002",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.009344,
+        "lat": 11.660666666666668
+      },
+      {
+        "task_id": "L3-003",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.008634666666666667,
+        "lat": 10.511333333333333
+      },
+      {
+        "task_id": "L3-004",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.008047333333333333,
+        "lat": 9.392333333333333
+      },
+      {
+        "task_id": "L3-005",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.005751666666666667,
+        "lat": 6.618333333333333
+      },
+      {
+        "task_id": "L3-006",
+        "difficulty": "L3",
+        "passed_model": "qwen3-coder-flash",
+        "attempts": 2,
+        "hit_first": false,
+        "cost": 0.020096,
+        "lat": 25.041333333333334
+      },
+      {
+        "task_id": "L3-007",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.007174,
+        "lat": 7.849333333333334
+      },
+      {
+        "task_id": "L3-008",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.006938666666666667,
+        "lat": 7.308666666666666
+      },
+      {
+        "task_id": "L3-009",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.009509333333333333,
+        "lat": 10.43
+      },
+      {
+        "task_id": "L3-010",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.011559666666666666,
+        "lat": 11.315666666666667
+      },
+      {
+        "task_id": "L3-011",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.008701,
+        "lat": 8.596666666666666
+      },
+      {
+        "task_id": "L3-012",
+        "difficulty": "L3",
+        "passed_model": "doubao-seed-2-0-code-preview-260215",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.005213666666666667,
+        "lat": 4.601333333333334
+      },
+      {
+        "task_id": "L4-001",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.037298,
+        "lat": 32.693
+      },
+      {
+        "task_id": "L4-002",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.044244,
+        "lat": 27.551666666666666
+      },
+      {
+        "task_id": "L4-003",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.014694,
+        "lat": 10.712
+      },
+      {
+        "task_id": "L4-004",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.025662,
+        "lat": 19.283
+      },
+      {
+        "task_id": "L4-005",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.015226,
+        "lat": 8.142333333333333
+      },
+      {
+        "task_id": "L4-006",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.025662,
+        "lat": 12.704
+      },
+      {
+        "task_id": "L4-007",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.01751,
+        "lat": 12.027999999999999
+      },
+      {
+        "task_id": "L4-008",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.040022,
+        "lat": 26.133
+      },
+      {
+        "task_id": "L4-009",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.012722,
+        "lat": 9.423
+      },
+      {
+        "task_id": "L4-010",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.01856,
+        "lat": 11.460666666666667
+      },
+      {
+        "task_id": "L4-011",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.018846,
+        "lat": 16.66433333333333
+      },
+      {
+        "task_id": "L4-012",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.018442,
+        "lat": 15.032666666666668
+      }
+    ]
+  },
+  "E2_measured": {
+    "n": 48,
+    "pass_rate": 1.0,
+    "hit_first_rate": 0.9791666666666666,
+    "avg_cost": 0.007896333333333333,
+    "total_cost": 0.37902399999999997,
+    "avg_latency": 7.423625,
+    "per_task": [
+      {
+        "task_id": "L1-001",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00028233333333333333,
+        "lat": 4.618
+      },
+      {
+        "task_id": "L1-002",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00020933333333333334,
+        "lat": 3.055
+      },
+      {
+        "task_id": "L1-003",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00032333333333333335,
+        "lat": 4.360333333333333
+      },
+      {
+        "task_id": "L1-004",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0002446666666666667,
+        "lat": 2.6943333333333332
+      },
+      {
+        "task_id": "L1-005",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00031033333333333336,
+        "lat": 4.206666666666666
+      },
+      {
+        "task_id": "L1-006",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000195,
+        "lat": 2.6173333333333333
+      },
+      {
+        "task_id": "L1-007",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000269,
+        "lat": 4.220000000000001
+      },
+      {
+        "task_id": "L1-008",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0003663333333333333,
+        "lat": 5.873
+      },
+      {
+        "task_id": "L1-009",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0002753333333333334,
+        "lat": 4.535
+      },
+      {
+        "task_id": "L1-010",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00033766666666666667,
+        "lat": 4.983333333333333
+      },
+      {
+        "task_id": "L1-011",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00033866666666666664,
+        "lat": 4.455
+      },
+      {
+        "task_id": "L1-012",
+        "difficulty": "L1",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00030566666666666665,
+        "lat": 3.753
+      },
+      {
+        "task_id": "L2-001",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000371,
+        "lat": 5.639666666666667
+      },
+      {
+        "task_id": "L2-002",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00022233333333333333,
+        "lat": 3.3756666666666666
+      },
+      {
+        "task_id": "L2-003",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0003446666666666667,
+        "lat": 5.282333333333334
+      },
+      {
+        "task_id": "L2-004",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000318,
+        "lat": 4.075333333333333
+      },
+      {
+        "task_id": "L2-005",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00033266666666666666,
+        "lat": 4.746333333333333
+      },
+      {
+        "task_id": "L2-006",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000478,
+        "lat": 6.940333333333333
+      },
+      {
+        "task_id": "L2-007",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000686,
+        "lat": 7.455
+      },
+      {
+        "task_id": "L2-008",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000252,
+        "lat": 3.275333333333333
+      },
+      {
+        "task_id": "L2-009",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00024733333333333335,
+        "lat": 3.7520000000000002
+      },
+      {
+        "task_id": "L2-010",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000363,
+        "lat": 3.8043333333333336
+      },
+      {
+        "task_id": "L2-011",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00018966666666666668,
+        "lat": 2.993333333333333
+      },
+      {
+        "task_id": "L2-012",
+        "difficulty": "L2",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0006236666666666667,
+        "lat": 8.229666666666667
+      },
+      {
+        "task_id": "L3-001",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0009006666666666667,
+        "lat": 12.792333333333334
+      },
+      {
+        "task_id": "L3-002",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000482,
+        "lat": 6.673666666666667
+      },
+      {
+        "task_id": "L3-003",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0005916666666666667,
+        "lat": 7.851666666666667
+      },
+      {
+        "task_id": "L3-004",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00038,
+        "lat": 5.925
+      },
+      {
+        "task_id": "L3-005",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00020633333333333333,
+        "lat": 3.2386666666666666
+      },
+      {
+        "task_id": "L3-006",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.001145,
+        "lat": 14.314
+      },
+      {
+        "task_id": "L3-007",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00038866666666666666,
+        "lat": 6.472666666666666
+      },
+      {
+        "task_id": "L3-008",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0002676666666666667,
+        "lat": 3.3016666666666667
+      },
+      {
+        "task_id": "L3-009",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.000514,
+        "lat": 7.411666666666667
+      },
+      {
+        "task_id": "L3-010",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.0006023333333333333,
+        "lat": 7.4126666666666665
+      },
+      {
+        "task_id": "L3-011",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00037533333333333337,
+        "lat": 5.255333333333333
+      },
+      {
+        "task_id": "L3-012",
+        "difficulty": "L3",
+        "passed_model": "qwen3.7-flash",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.00024433333333333333,
+        "lat": 3.0456666666666665
+      },
+      {
+        "task_id": "L4-001",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.035868,
+        "lat": 14.116999999999999
+      },
+      {
+        "task_id": "L4-002",
+        "difficulty": "L4",
+        "passed_model": "doubao-seed-2-1-pro-260915",
+        "attempts": 2,
+        "hit_first": false,
+        "cost": 0.093648,
+        "lat": 50.342
+      },
+      {
+        "task_id": "L4-003",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.01716,
+        "lat": 6.434333333333334
+      },
+      {
+        "task_id": "L4-004",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.02478,
+        "lat": 9.955333333333334
+      },
+      {
+        "task_id": "L4-005",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.021852,
+        "lat": 8.328666666666667
+      },
+      {
+        "task_id": "L4-006",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.03714,
+        "lat": 15.911333333333333
+      },
+      {
+        "task_id": "L4-007",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.01974,
+        "lat": 8.281666666666666
+      },
+      {
+        "task_id": "L4-008",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.021552,
+        "lat": 9.994666666666667
+      },
+      {
+        "task_id": "L4-009",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.015756,
+        "lat": 7.267
+      },
+      {
+        "task_id": "L4-010",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.022956,
+        "lat": 9.572333333333333
+      },
+      {
+        "task_id": "L4-011",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.028104,
+        "lat": 12.826333333333334
+      },
+      {
+        "task_id": "L4-012",
+        "difficulty": "L4",
+        "passed_model": "qwen3.8-max",
+        "attempts": 1,
+        "hit_first": true,
+        "cost": 0.026484,
+        "lat": 10.668000000000001
+      }
+    ]
+  },
+  "E3_best": {
+    "label": "α=0.5 β=0.15",
+    "avg_cost": 0.007896333333333333
+  },
+  "L4_comparison": {
+    "pure_formula": {
+      "hit_first": 0.9375,
+      "avg_cost": 0.0023413541666666665,
+      "quality": 92.4
+    },
+    "force_flagship": {
+      "hit_first": 0.9791666666666666,
+      "avg_cost": 0.007896333333333333,
+      "quality": 93.0
+    }
+  },
+  "M6": {
+    "prior_delta": -0.95,
+    "measured_delta": -0.69
+  }
+}

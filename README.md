@@ -41,6 +41,8 @@
 ├── upgrade_l4.py            # L4 题目升级
 ├── run_eval.py              # 评测 CLI 入口
 ├── make_dashboard.py        # 仪表盘 CLI 入口
+├── replay_route.py          # 离线回放实验（E1~E3 + M1~M7 指标 + 敏感性分析，零成本）
+├── router_agent.py          # 多模型路由原型（母/子 Agent 运行时，复用 eval_kit）
 ├── check_volcengine.py      # 方舟 Key/模型可用性核实脚本
 ├── check_aliyun.py          # 百炼 Key/模型可用性核实脚本
 ├── tools/verify_dashboard.js # 仪表盘渲染 JS 回归验证（Node 执行）
@@ -125,6 +127,8 @@ output_tokens / input_tier / cost_yuan / latency_seconds / code / test_details`�
 - [x] **及格线校准至 85**：拦住 L4 掉队的 coder-flash（78），保留功能正确的便宜模型
 - [x] **核心结论产出**：L1~L3 首选 `qwen3.7-flash`（性价比碾压），L4 需旗舰兜底；分级路由比全程旗舰省约 71%
 - [x] 路由 Skill 数据层升级为实测版 + 研究报告撰写完成
+- [x] **路由验证与假设检验**：离线回放实验（E1~E3）+ M1~M7 指标 + H1~H5 假设验证 + 敏感性分析（`replay_route.py`，零成本；结论：实测规则省 53%~62%、非劣效成立、H2/H3/H5 被证伪）
+- [x] **路由原型**：`router_agent.py`（母/子 Agent 运行时，复用 eval_kit，干跑通过；真实运行需 API 确认）
 
 ## 许可证
 
